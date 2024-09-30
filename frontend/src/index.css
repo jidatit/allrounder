@@ -1,0 +1,93 @@
+/* index.css */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
+@import "leaflet/dist/leaflet.css";
+
+@import url("https://fonts.googleapis.com/css2?family=Orelega+One&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Gilroy-Bold";
+  src: local("Gilroy-Bold"), url(./fonts/Gilroy-Bold.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Gilroy-SemiBold";
+  src: local("Gilroy-SemiBold"),
+    url(./fonts/Gilroy-SemiBold.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Gilroy-Medium";
+  src: local("Gilroy-Medium"), url(./fonts/Gilroy-Medium.ttf) format("truetype");
+}
+@font-face {
+  font-family: "Gilroy-Regular";
+  src: local("Gilroy-Regular"),
+    url(./fonts/Gilroy-Regular.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "Gilroy-Light";
+  src: local("Gilroy-Light"), url(./fonts/Gilroy-Light.ttf) format("truetype");
+}
+.custom-regular {
+  font-family: "Gilroy-Regular", sans-serif;
+}
+
+.custom-light {
+  font-family: "Gilroy-Light", sans-serif;
+}
+
+.custom-bold {
+  font-family: "Gilroy-Bold", sans-serif;
+}
+
+.custom-semibold {
+  font-family: "Gilroy-SemiBold", sans-serif;
+}
+
+.custom-medium {
+  font-family: "Gilroy-Medium", sans-serif;
+}
+
+/* Hide scrollbar for Chrome, Safari, and Edge */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for IE, Edge, and Firefox */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+
+.custom-shadow {
+  @apply shadow-lg; /* base Tailwind shadow class */
+  box-shadow: 0px 0px 20px 0px rgba(0, 0, 0, 0.1);
+}
+
+.orelega-one-regular {
+  font-family: "Orelega One", serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.scrollbar-custom::-webkit-scrollbar {
+  width: 8px; /* Width of the scrollbar */
+}
+
+.scrollbar-custom::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Scrollbar track color */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb {
+  background-color: #d9d9d9; /* Scrollbar thumb (the handle) color */
+  border: 2px solid #f1f1f1; /* Border around the thumb */
+}
+
+.scrollbar-custom::-webkit-scrollbar-thumb:hover {
+  background-color: #d9d9d9; /* Thumb color when hovered */
+}

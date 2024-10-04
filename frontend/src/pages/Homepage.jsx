@@ -270,7 +270,7 @@ const Homepage = () => {
                 />
               </div>
               <h3 className=" custom-semibold text-3xl my-1">Discover</h3>
-              <p className="custom-regular text-lg  px-6 lg:px-0">
+              <p className="custom-regular text-center text-lg  px-6 lg:px-0">
                 Vitae sapien pellentesque habitant morbi tristique senectus et
                 netus et.
               </p>
@@ -285,7 +285,7 @@ const Homepage = () => {
                 />
               </div>
               <h3 className=" custom-semibold text-3xl my-1">Review</h3>
-              <p className="custom-regular text-lg  px-6 lg:px-0">
+              <p className="custom-regular text-center text-lg  px-6 lg:px-0">
                 Vitae sapien pellentesque habitant morbi tristique senectus et
                 netus et.
               </p>
@@ -300,7 +300,7 @@ const Homepage = () => {
                 />
               </div>
               <h3 className=" custom-semibold text-3xl my-1 ">Enroll</h3>
-              <p className="custom-regular text-lg  px-6 lg:px-0">
+              <p className="custom-regular text-center text-lg  px-6 lg:px-0">
                 Vitae sapien pellentesque habitant morbi tristique senectus et
                 netus et.
               </p>
@@ -315,7 +315,7 @@ const Homepage = () => {
                 />
               </div>
               <h3 className=" custom-semibold text-3xl my-1 ">Get Started</h3>
-              <p className="custom-regular text-lg  px-6 lg:px-0">
+              <p className="custom-regular text-center text-lg  px-6 lg:px-0">
                 Vitae sapien pellentesque habitant morbi tristique senectus et
                 netus et.
               </p>

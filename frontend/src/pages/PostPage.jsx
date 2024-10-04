@@ -400,7 +400,7 @@ const PostPage = () => {
 
         {/* Related Activities */}
 
-        <section className="h-full w-full mb-16  ">
+        <section className="h-full w-full mb-16 mt-10 ">
           <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities

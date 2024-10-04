@@ -9,6 +9,7 @@ const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const navItemRef = useRef(null);
   const menuRef = useRef(null);
+  const userRef = useRef(null);
   const menuItems = [
     { name: "Home", url: "/" },
     { name: "Artists" },
@@ -19,15 +20,16 @@ const Header = () => {
 
   const handleMobileMenu = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
-
-    console.log("clicked");
   };
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (menuRef.current && !navItemRef.current.contains(event.target)) {
+      if (
+        menuRef.current &&
+        !navItemRef.current.contains(event.target) &&
+        !userRef.current.contains(event.target)
+      ) {
         setIsMobileMenuOpen(false);
-        console.log("clicked");
       }
     };
 
@@ -95,9 +97,9 @@ const Header = () => {
       {/* Mobile menu */}
       <section className="md:hidden  py-6 bg-white z-40 ">
         <div className=" flex  justify-between items-center px-4">
-          <div>
+          <Link to={"/"}>
             <p className="text-3xl custom-bold">LOGO</p>
-          </div>
+          </Link>
           <div onClick={handleMobileMenu}>
             <GiHamburgerMenu className="text-3xl" />
           </div>
@@ -110,9 +112,9 @@ const Header = () => {
           }`}
         >
           <div className="flex items-center justify-between w-full">
-            <div>
+            <Link to={"/"}>
               <p className="text-3xl custom-bold">LOGO</p>
-            </div>
+            </Link>
 
             <div className="flex lg:gap-20 sm:gap-10 gap-2 items-center bg-green-300 ">
               {/* <button className=" bg-[#E55938] text-[12px]   px-6 py-1 rounded-3xl text-white custom-semibold">
@@ -126,7 +128,14 @@ const Header = () => {
             </div>
             <div className="flex gap-3">
               <div className="text-3xl ">
-                <Link to={"/signup"}>
+                <Link
+                  ref={userRef}
+                  to={"/signup"}
+                  onClick={() => {
+                    handleMobileMenu();
+                    console.log("1");
+                  }}
+                >
                   <PiUser />
                 </Link>
               </div>

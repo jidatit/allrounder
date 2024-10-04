@@ -119,20 +119,31 @@ const Homepage = () => {
     centerMode: true,
     responsive: [
       {
-        breakpoint: 1024,
+        breakpoint: 1360,
         settings: {
-          slidesToShow: 2,
+          slidesToShow: 3,
           slidesToScroll: 1,
-          infinite: true,
-          // dots: true,
         },
       },
       {
-        breakpoint: 600,
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 696,
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          initialSlide: 1,
         },
       },
     ],
@@ -246,7 +257,7 @@ const Homepage = () => {
       {/* EXPLORE PROGRAM */}
       <section className="h-full w-full  mb-12 md:mb-24  ">
         <div className="h-full w-full px-4 sm:px-8 pt-20 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
-          <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl  mb-10">
+          <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl  mb-10 text-center  lg:text-start">
             Explore programs
           </h2>
           <div className="flex flex-wrap">

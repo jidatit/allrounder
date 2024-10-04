@@ -20,12 +20,12 @@ const FeaturedCard = ({
 }) => {
   return (
     <Link to={"/post/1"}>
-      <div className="w-[270px]  rounded-lg  shadow-lg overflow-hidden bg-white">
+      <div className="max-w-[270px]  min-w-[240px] rounded-lg  shadow-lg overflow-hidden bg-white">
         <div className="relative">
           <img
             src={imageUrl}
             alt={title}
-            className="w-[250px] mx-auto h-[180px] object-cover rounded-lg"
+            className="max-w-[250px] min-w-[240px] mx-auto h-[180px] object-cover rounded-lg"
           />
           {sponsored && (
             <span className="absolute bottom-3 right-5 bg-[#E55938] font-Montserrat  text-white text-sm px-5 py-1 rounded-full">

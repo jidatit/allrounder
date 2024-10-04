@@ -46,9 +46,9 @@ const Header = () => {
     <header className="sticky top-0 z-50  bg-[#ffffff]">
       <section className=" md:flex items-center justify-between sm:px-8 py-6 lg:px-16 custom-regular hidden mx-auto max-w-[1440px]">
         {/* Logo */}
-        <div>
+        <Link to={"/"}>
           <p className="text-[40px] custom-bold">LOGO</p>
-        </div>
+        </Link>
 
         <div>
           <nav>
@@ -82,9 +82,9 @@ const Header = () => {
 
         {/* User Section */}
         <div className="flex lg:gap-20 sm:gap-10 items-center">
-          <button className="w-[181px] h-[48px] bg-[#E55938] rounded-3xl text-white custom-semibold">
+          {/* <button className="w-[181px] h-[48px] bg-[#E55938] rounded-3xl text-white custom-semibold">
             Create your event
-          </button>
+          </button> */}
           <div className="text-3xl">
             <Link to={"/signup"}>
               <PiUser />
@@ -113,17 +113,23 @@ const Header = () => {
             <div>
               <p className="text-3xl custom-bold">LOGO</p>
             </div>
-            <div className="flex lg:gap-20 sm:gap-10 gap-2 items-center ">
-              <button className=" bg-[#E55938] text-[12px]   px-6 py-1 rounded-3xl text-white custom-semibold">
+
+            <div className="flex lg:gap-20 sm:gap-10 gap-2 items-center bg-green-300 ">
+              {/* <button className=" bg-[#E55938] text-[12px]   px-6 py-1 rounded-3xl text-white custom-semibold">
                 Create your event
-              </button>
-              <div className="text-3xl">
+              </button> */}
+              {/* <div className="text-3xl ">
+                <Link to={"/signup"}>
+                  <PiUser />
+                </Link>
+              </div> */}
+            </div>
+            <div className="flex gap-3">
+              <div className="text-3xl ">
                 <Link to={"/signup"}>
                   <PiUser />
                 </Link>
               </div>
-            </div>
-            <div>
               <div>
                 <IoMdClose />
               </div>

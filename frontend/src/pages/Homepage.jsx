@@ -1,9 +1,11 @@
-import React from "react";
+import React, { useRef } from "react";
 import Layout from "../UI Components/Layout";
 import CategoryCard from "../UI Components/CategoryCard";
 import FeaturedCard from "../UI Components/FeaturedCard";
 import { Link } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
+import Slider from "react-slick";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 
 const Homepage = () => {
   const CategoryCards = [
@@ -98,6 +100,43 @@ const Homepage = () => {
       sponsored: true,
     },
   ];
+  let sliderRef = useRef(null);
+  const next = () => {
+    sliderRef.slickNext();
+  };
+  const previous = () => {
+    sliderRef.slickPrev();
+  };
+
+  const settings = {
+    // dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    centerMode: true,
+    responsive: [
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+          infinite: true,
+          // dots: true,
+        },
+      },
+      {
+        breakpoint: 600,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          initialSlide: 1,
+        },
+      },
+    ],
+  };
 
   return (
     <main>
@@ -156,22 +195,43 @@ const Homepage = () => {
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
             Featured Activities
           </h2>
-          <div className="flex gap-6 overflow-auto pb-5 scrollbar-hide">
-            {activityCards.map((activity) => {
-              return (
-                <FeaturedCard
-                  title={activity.title}
-                  duration={activity.duration}
-                  date={activity.date}
-                  ageRange={activity.ageRange}
-                  reviews={activity.reviews}
-                  rating={activity.rating}
-                  price={activity.price}
-                  imageUrl={activity.imageUrl}
-                  sponsored={activity.sponsored}
-                />
-              );
-            })}
+
+          <div className="w-full pb-5 relative">
+            <Slider
+              {...settings}
+              ref={(slider) => {
+                sliderRef = slider;
+              }}
+            >
+              {activityCards.map((activity, index) => (
+                <div key={index}>
+                  <FeaturedCard
+                    title={activity.title}
+                    duration={activity.duration}
+                    date={activity.date}
+                    ageRange={activity.ageRange}
+                    reviews={activity.reviews}
+                    rating={activity.rating}
+                    price={activity.price}
+                    imageUrl={activity.imageUrl}
+                    sponsored={activity.sponsored}
+                  />
+                </div>
+              ))}
+            </Slider>
+
+            <button
+              className="button absolute top-[50%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+              onClick={previous}
+            >
+              <FaChevronLeft />
+            </button>
+            <button
+              className="button absolute top-[50%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
+              onClick={next}
+            >
+              <FaChevronRight />
+            </button>
           </div>
           <div className="flex item justify-center mt-4">
             <Link

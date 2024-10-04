@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IoShareOutline, IoStarOutline, IoStarSharp } from "react-icons/io5";
-import { Link } from "react-router-dom";
 import FeaturedCard from "../UI Components/FeaturedCard";
 import { PiCopy } from "react-icons/pi";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
+import Slider from "react-slick";
+import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 const createCustomIcon = (number) => {
   return L.divIcon({
     className: "custom-marker",
@@ -134,6 +135,58 @@ const PostPage = () => {
   ];
 
   const rating = 3;
+
+  let sliderRef = useRef(null);
+  let sliderRef2 = useRef(null);
+
+  const next = (sliderRef) => {
+    sliderRef.slickNext();
+  };
+  const previous = (sliderRef) => {
+    sliderRef.slickPrev();
+  };
+
+  const settings = {
+    dots: true,
+    infinite: true,
+    speed: 500,
+    slidesToShow: 4,
+    slidesToScroll: 1,
+    autoplay: true,
+    autoplaySpeed: 3000,
+    centerMode: true,
+    responsive: [
+      {
+        breakpoint: 1360,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: 3,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: 2,
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 696,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
+
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
@@ -345,32 +398,6 @@ const PostPage = () => {
           </div>
         </div>
 
-        {/* Featured Activities */}
-
-        <section className="h-full w-full  mb-16 ">
-          <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
-            <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
-              Featured Activities
-            </h2>
-            <div className="flex gap-6 overflow-auto pb-5 scrollbar-hide">
-              {activityCards.map((activity) => {
-                return (
-                  <FeaturedCard
-                    title={activity.title}
-                    duration={activity.duration}
-                    date={activity.date}
-                    ageRange={activity.ageRange}
-                    reviews={activity.reviews}
-                    rating={activity.rating}
-                    price={activity.price}
-                    imageUrl={activity.imageUrl}
-                    sponsored={activity.sponsored}
-                  />
-                );
-              })}
-            </div>
-          </div>
-        </section>
         {/* Related Activities */}
 
         <section className="h-full w-full mb-16  ">
@@ -378,25 +405,90 @@ const PostPage = () => {
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities
             </h2>
-            <div className="flex gap-6 overflow-auto pb-5 scrollbar-hide">
-              {activityCards.map((activity) => {
-                return (
-                  <FeaturedCard
-                    title={activity.title}
-                    duration={activity.duration}
-                    date={activity.date}
-                    ageRange={activity.ageRange}
-                    reviews={activity.reviews}
-                    rating={activity.rating}
-                    price={activity.price}
-                    imageUrl={activity.imageUrl}
-                    sponsored={activity.sponsored}
-                  />
-                );
-              })}
+            <div className="w-full pb-5 relative ">
+              <Slider
+                {...settings}
+                ref={(slider) => {
+                  sliderRef = slider;
+                }}
+              >
+                {activityCards.map((activity, index) => (
+                  <div key={index}>
+                    <FeaturedCard
+                      title={activity.title}
+                      duration={activity.duration}
+                      date={activity.date}
+                      ageRange={activity.ageRange}
+                      reviews={activity.reviews}
+                      rating={activity.rating}
+                      price={activity.price}
+                      imageUrl={activity.imageUrl}
+                      sponsored={activity.sponsored}
+                    />
+                  </div>
+                ))}
+              </Slider>
+              <button
+                className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                onClick={() => previous(sliderRef)}
+              >
+                <FaChevronLeft />
+              </button>
+              <button
+                className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
+                onClick={() => next(sliderRef)}
+              >
+                <FaChevronRight />
+              </button>
             </div>
           </div>
         </section>
+        {/* Featured Activities */}
+
+        <section className="h-full w-full mb-16 ">
+          <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+            <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
+              Featured Activities
+            </h2>
+            <div className="w-full pb-5 relative">
+              <Slider
+                {...settings}
+                ref={(slider) => {
+                  sliderRef2 = slider;
+                }}
+              >
+                {activityCards.map((activity, index) => (
+                  <div key={index}>
+                    <FeaturedCard
+                      title={activity.title}
+                      duration={activity.duration}
+                      date={activity.date}
+                      ageRange={activity.ageRange}
+                      reviews={activity.reviews}
+                      rating={activity.rating}
+                      price={activity.price}
+                      imageUrl={activity.imageUrl}
+                      sponsored={activity.sponsored}
+                    />
+                  </div>
+                ))}
+              </Slider>
+              <button
+                className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                onClick={() => previous(sliderRef2)}
+              >
+                <FaChevronLeft />
+              </button>
+              <button
+                className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
+                onClick={() => next(sliderRef2)}
+              >
+                <FaChevronRight />
+              </button>
+            </div>
+          </div>
+        </section>
+
         {/* Reviews */}
 
         <section className="h-full w-full  ">

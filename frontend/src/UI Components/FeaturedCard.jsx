@@ -20,7 +20,7 @@ const FeaturedCard = ({
 }) => {
   return (
     <Link to={"/post/1"}>
-      <div className="w-[270px] rounded-lg  shadow-lg overflow-hidden bg-white">
+      <div className="w-[270px]  rounded-lg  shadow-lg overflow-hidden bg-white">
         <div className="relative">
           <img
             src={imageUrl}

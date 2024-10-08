@@ -4,9 +4,11 @@ import { IoMdClose } from "react-icons/io";
 
 import { PiUser } from "react-icons/pi";
 import { Link, NavLink } from "react-router-dom";
+import { useAuth } from "../context/authContext";
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const { currentUser, handleLogout } = useAuth();
   const navItemRef = useRef(null);
   const menuRef = useRef(null);
   const userRef = useRef(null);
@@ -88,9 +90,25 @@ const Header = () => {
             Create your event
           </button> */}
           <div className="text-3xl">
-            <Link to={"/signup"}>
-              <PiUser />
-            </Link>
+            {currentUser ? (
+              <div className="flex gap-x-7 items-center">
+                <button
+                  className="bg-[#E55938] hover:bg-orange-700 py-2.5 px-6 rounded-lg custom-bold text-white text-[18px]"
+                  onClick={() => {
+                    handleLogout();
+                  }}
+                >
+                  Logout
+                </button>
+                <Link to={"/login"}>
+                  <PiUser />
+                </Link>
+              </div>
+            ) : (
+              <Link to={"/signup"}>
+                <PiUser />
+              </Link>
+            )}
           </div>
         </div>
       </section>
@@ -128,16 +146,27 @@ const Header = () => {
             </div>
             <div className="flex gap-3">
               <div className="text-3xl ">
-                <Link
-                  ref={userRef}
-                  to={"/signup"}
-                  onClick={() => {
-                    handleMobileMenu();
-                    console.log("1");
-                  }}
-                >
-                  <PiUser />
-                </Link>
+                {currentUser ? (
+                  <button
+                    className="bg-orange-600 p-3 rounded-lg custom-semibold"
+                    onClick={() => {
+                      handleLogout();
+                    }}
+                  >
+                    Logout
+                  </button>
+                ) : (
+                  <Link
+                    ref={userRef}
+                    to={"/signup"}
+                    onClick={() => {
+                      handleMobileMenu();
+                      console.log("1");
+                    }}
+                  >
+                    <PiUser />
+                  </Link>
+                )}
               </div>
               <div>
                 <IoMdClose />

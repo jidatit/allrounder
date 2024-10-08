@@ -1,12 +1,17 @@
-import React, { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { useState } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
+import { auth, db } from "../config/firebase";
+import { addDoc, collection } from "firebase/firestore";
+import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-
+  const navigate = useNavigate();
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted with:", { email, password, zipCode });
@@ -15,6 +20,45 @@ const SignupPage = () => {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  const RegisterUser = async (e) => {
+    e.preventDefault(); // Prevent default form submission
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      let collectionName = "users";
+
+      await addDoc(collection(db, collectionName), {
+        uid: user.uid,
+        email: email,
+        zipCode: zipCode,
+        userType: "user",
+        dateCreated: new Date(),
+      });
+      setEmail("");
+      setPassword("");
+      setZipCode("");
+
+      toast.success("You registered successfully!");
+      if (collectionName === "admins") {
+        setTimeout(() => {
+          navigate("/AdminLayout");
+        }, 3000);
+      } else {
+        setTimeout(() => {
+          navigate("/UserLayout");
+        }, 3000);
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error(`Registration failed: ${err.message}`);
+    }
+  };
+
   return (
     <main className="flex max-w-[1440px] mx-auto">
       <div className="w-1/2 lg:h-full overflow-hidden hidden md:flex">
@@ -24,7 +68,7 @@ const SignupPage = () => {
           className="object-cover object-center h-full w-full"
         />
       </div>
-      <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex flex-col">
+      <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex-col">
         <h1 className="orelega-one-regular lg:text-5xl md:text-4xl  text-3xl  ">
           Signup Your Account
         </h1>
@@ -73,6 +117,7 @@ const SignupPage = () => {
             <div>
               <button
                 type="submit"
+                onClick={RegisterUser}
                 className=" w-[110px] h-[33px]  my-6 md:w-[137px]  lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center"
               >
                 Sign Up

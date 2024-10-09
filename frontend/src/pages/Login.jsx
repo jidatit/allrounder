@@ -4,7 +4,7 @@ import { auth, db } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
   const [email, setEmail] = useState("");
@@ -96,22 +96,29 @@ const LoginPage = () => {
                 className="custom-light bg-[#F5F4EC]  placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black  my-3  w-[80vw]  md:w-[40vw] max-w-[660px] outline-[#E55938]"
               />
             </div>
-            <div className="relative">
-              <input
-                type={showPassword ? "text" : "password"}
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="custom-light bg-[#F5F4EC]  placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black   my-3 w-[80vw]  md:w-[40vw] max-w-[660px] outline-[#E55938]"
-              />
-              <button
-                type="button"
-                onClick={togglePasswordVisibility}
-                className="absolute lg:right-8 md:right-6 right-6 md:top-8 top-7 "
-              >
-                {showPassword ? <FiEyeOff /> : <FiEye />}
-              </button>
+            <div className="flex flex-col gap-y-2 ">
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="custom-light bg-[#F5F4EC]  placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black   my-3 w-[80vw]  md:w-[40vw] max-w-[660px] outline-[#E55938]"
+                />
+                <button
+                  type="button"
+                  onClick={togglePasswordVisibility}
+                  className="absolute lg:right-8 md:right-6 right-6 md:top-8 top-7 "
+                >
+                  {showPassword ? <FiEyeOff /> : <FiEye />}
+                </button>
+              </div>
+              <Link to={"/forgotPassword"}>
+                <h1 className="w-full text-end cursor-pointer">
+                  Forgot Password ?
+                </h1>
+              </Link>
             </div>
 
             <div>

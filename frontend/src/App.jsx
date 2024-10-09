@@ -18,6 +18,7 @@ import UserDashboard from "./admin/pages/UserDashboard";
 import AdminLayout from "./admin/layout/AdminLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import "./index.css";
+import ResetPasswordFrom from "./pages/ResetPasswordFrom";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -61,6 +62,8 @@ function App() {
             <LoadingSpinner />
           ) : (
             <Routes>
+              <Route path="/forgotPassword" element={<ForgotPassword />} />
+              <Route path="/resetPassword" element={<ResetPasswordFrom />} />
               <Route path="/" element={<Layout />}>
                 <Route
                   index
@@ -77,7 +80,6 @@ function App() {
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
-                <Route path="forgotPassword" element={<ForgotPassword />} />
               </Route>
 
               {/* Protected User Dashboard Route */}

@@ -11,7 +11,7 @@ const Navbar = () => {
               Dashboard
             </h1>
           </div>
-          <div className="flex items-center smd:w-[60%] smd:justify-end p-2">
+          <div className="hidden smd:flex items-center smd:w-[60%] smd:justify-end p-2">
             <img
               className="h-16 w-16 rounded-xl"
               src={"/Rectangle 1393.png"}

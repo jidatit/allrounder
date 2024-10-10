@@ -47,7 +47,7 @@ const SideBar = ({ isSidebarExpanded }) => {
               My Profile
             </p>
           </Link>
-          <Link
+          {/* <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group  ${
               activeItem === "My Interests"
@@ -69,7 +69,7 @@ const SideBar = ({ isSidebarExpanded }) => {
             >
               My Interests
             </p>
-          </Link>
+          </Link> */}
           <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 hover:text-white group ${

@@ -47,7 +47,7 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
               Activity Management
             </p>
           </Link>
-          <Link
+          {/* <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group  ${
               activeItem === "My Interests"
@@ -95,7 +95,7 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
             >
               Content Management
             </p>
-          </Link>
+          </Link> */}
         </div>
       </div>
     </div>

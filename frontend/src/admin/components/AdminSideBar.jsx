@@ -69,7 +69,7 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
             >
               Blogs Management
             </p>
-          </Link>
+          </Link> */}
           <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 hover:text-white group ${
@@ -93,9 +93,9 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
                 activeItem === "Sign Out" ? "text-white" : "text-black"
               }`}
             >
-              Content Management
+              Logout
             </p>
-          </Link> */}
+          </Link>
         </div>
       </div>
     </div>

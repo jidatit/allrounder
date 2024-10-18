@@ -5,6 +5,11 @@ import { PiCopy } from "react-icons/pi";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { useParams } from "react-router-dom";
+import { toast } from "react-toastify";
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../config/firebase";
+import ImageSlider from "../admin/components/ImageSlider";
 const createCustomIcon = (number) => {
   return L.divIcon({
     className: "custom-marker",
@@ -15,6 +20,145 @@ const createCustomIcon = (number) => {
 };
 
 const PostPage = () => {
+  const { activityIdParam } = useParams();
+  const [relatedActivities, setRelatedActivities] = useState([]);
+  const [featuredActivities, setFeaturedActivities] = useState([]);
+  useEffect(() => {
+    fetchFeaturedActivities();
+    // ... your existing useEffect logic
+  }, [activityIdParam]);
+  const fetchFeaturedActivities = async () => {
+    try {
+      const featuredActivitiesRef = collection(db, "featuredActivities");
+      const querySnapshot = await getDocs(featuredActivitiesRef);
+      const featuredActivitiesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFeaturedActivities(featuredActivitiesData);
+    } catch (error) {
+      console.error("Error fetching featured activities:", error);
+    }
+  };
+  const [slidesToShow, setSlidesToShow] = useState(3);
+
+  useEffect(() => {
+    const updateSlidesToShow = () => {
+      if (window.innerWidth < 600) {
+        setSlidesToShow(1);
+      } else if (window.innerWidth < 1024) {
+        setSlidesToShow(2);
+      } else {
+        setSlidesToShow(3);
+      }
+    };
+
+    updateSlidesToShow();
+    window.addEventListener("resize", updateSlidesToShow);
+
+    return () => window.removeEventListener("resize", updateSlidesToShow);
+  }, []);
+  const [formData, setFormData] = useState({
+    activityId: "",
+    images: Array(3).fill(null),
+    imagesPreviews: Array(3).fill(null),
+    title: "",
+    description: "",
+    details: [""],
+    location: "",
+    hashtags: [""],
+    category: "",
+    showGoogleMap: false,
+    host: {
+      name: "",
+      phone: "",
+      email: "",
+      about: "",
+      website: "",
+      profilePic: null,
+      profilePicPreview: null,
+    },
+    startingHours: "",
+    endingHours: "",
+  });
+  const [loading, setLoading] = useState(true);
+  useEffect(() => {
+    const fetchActivityData = async () => {
+      try {
+        setLoading(true);
+        const activitiesRef = collection(db, "activities");
+        const q = query(
+          activitiesRef,
+          where("activityId", "==", Number(activityIdParam))
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error("Activity not found");
+        }
+
+        const activityDoc = querySnapshot.docs[0];
+        const activityData = activityDoc.data();
+
+        // Update formData with fetched data
+        setFormData({
+          ...formData,
+          activityId: activityData.activityId,
+          imagesPreviews: activityData.imageUrls || Array(3).fill(null),
+          title: activityData.title || "",
+          description: activityData.description || "",
+          details: activityData.details?.length ? activityData.details : [""],
+          location: activityData.location || "",
+          hashtags: activityData.hashtags?.length
+            ? activityData.hashtags
+            : [""],
+          category: activityData.category || "",
+          showGoogleMap: activityData.showGoogleMap || false,
+          host: {
+            name: activityData.host?.name || "",
+            phone: activityData.host?.phone || "",
+            email: activityData.host?.email || "",
+            about: activityData.host?.about || "",
+            website: activityData.host?.website || "",
+            profilePic: null,
+            profilePicPreview: activityData.host?.profilePicUrl || null,
+          },
+          startingHours: activityData.startingHours || "",
+          endingHours: activityData.endingHours || "",
+          documentId: activityDoc.id, // Store the document ID for updates
+        });
+        await fetchRelatedActivities(activityData.category);
+      } catch (error) {
+        console.error("Error fetching activity:", error);
+        toast.error("Failed to load activity data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activityIdParam) {
+      fetchActivityData();
+    }
+  }, [activityIdParam]);
+  const fetchRelatedActivities = async (category) => {
+    try {
+      const activitiesRef = collection(db, "activities");
+      const q = query(activitiesRef, where("category", "==", category));
+      const querySnapshot = await getDocs(q);
+
+      const relatedActivitiesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      console.log("Related activities:", relatedActivitiesData); // For debugging
+
+      setRelatedActivities(relatedActivitiesData);
+    } catch (error) {
+      console.error("Error fetching related activities:", error);
+      toast.error("Failed to load related activities");
+    }
+  };
   const locations = [
     { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
     { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
@@ -186,7 +330,55 @@ const PostPage = () => {
       },
     ],
   };
-
+  const settings2 = {
+    dots: true,
+    infinite: featuredActivities.length > 1,
+    speed: 500,
+    slidesToShow: Math.min(4, featuredActivities.length),
+    slidesToScroll: 1,
+    autoplay: featuredActivities.length > 1,
+    autoplaySpeed: 3000,
+    centerMode: false, // Disabled centerMode to prevent extra spacing
+    centerPadding: "0px",
+    responsive: [
+      {
+        breakpoint: 1360,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: Math.min(2, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 696,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+    ],
+  };
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
@@ -194,14 +386,14 @@ const PostPage = () => {
         <header className="flex flex-col md:flex-row ">
           <div className="lg:w-44 lg:h-44 md:w-32 md:h-32 w-24 h-24  bg-orange-100 rounded-xl overflow-hidden ">
             <img
-              src="/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
+              src={formData.imagesPreviews?.[0]}
               alt=""
               className="object-cover object-center w-full h-full"
             />
           </div>
           <div className="md:ml-7 mt-2 md:mt-0 flex justify-center items-start flex-col">
             <h2 className="custom-bold text-[20px] md:text-[28px] lg:text-[35px] ">
-              Toy shop - Grand launch, PWD Islamabad
+              {formData.title}
             </h2>
             <div className="flex md:items-center justify-between    flex-col md:flex-row md:w-[500px] lg:w-[650px]  mt-2 md:mt-6">
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
@@ -233,14 +425,10 @@ const PostPage = () => {
             {/* blog body */}
             <article className="mb-16">
               {/* main image */}
-              <img
-                src="/event.jpeg"
-                alt=""
-                className="w-full h-full max-h-[500px] object-cover object-center  rounded-2xl overflow-hidden custom-shadow rounded-2xl"
-              />
+              <ImageSlider images={formData.imagesPreviews} />
               {/* tags */}
               <div className="w-full flex flex-wrap gap-2  pt-9">
-                {tags.map((tag, index) => {
+                {formData.hashtags.map((tag, index) => {
                   return (
                     <p
                       key={index}
@@ -255,33 +443,14 @@ const PostPage = () => {
                 DESCRIPTION
               </p>
               <div className="gilroy-regular text-xl mb-6 lg:mb-10">
-                <p>
-                  Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
-                  Aenean commodo ligula eget dolor. Aenean massa. Cum sociis
-                  natoque penatibus et magnis dis parturient montes, nascetur
-                  ridiculus mus. Donec quam felis, ultricies nec, pellentesque
-                  eu, pretium quis, sem. Nulla consequat massa quis enim. Donec
-                  pede justo, fringilla vel, aliquet nec, vulputate eget, arcu.
-                  In enim justo, rhoncus ut, imperdiet a, venenatis vitae,
-                  justo. Nullam dictum felis eu pede mollis pretium. Integer
-                  tincidunt. Cras dapibus. Vivamus elementum semper nisi. Aenean
-                  vulputate eleifend tellus. Aenean leo ligula, porttitor eu,
-                  consequat vitae, eleifend ac, enim. Aliquam lorem ante,
-                  dapibus in, viverra quis, feugiat a, tellus. Phasellus viverra
-                  nulla ut metus varius laoreet. Quisque rutrum. Aenean
-                  imperdiet. Etiam ultricies nisi vel augue. Curabitur
-                  ullamcorper ultricies nisi. Nam eget dui. Etiam rhoncus.
-                  Maecenas tempus, tellus eget condimentum rhoncus, sem quam
-                  semper libero, sit amet adipiscing sem neque sed ipsum. Nam
-                  quam nunc, blandit vel, luctus pulvinar
-                </p>
+                <p>{formData.description}</p>
               </div>
 
               <p className="md:text-xl  text-lg lg:text-2xl custom-semibold my-4">
                 ACTIVITY DETAILS
               </p>
               <ul className="">
-                {activityDetails.map((acitivity, index) => {
+                {formData.details.map((acitivity, index) => {
                   return (
                     <li
                       key={index}
@@ -296,75 +465,70 @@ const PostPage = () => {
             <p className="md:text-xl  text-lg lg:text-2xl custom-semibold my-4">
               Open In Google map
             </p>
-            <div className="100% md:h-[400px] h-[500px]  ">
-              <MapContainer
-                center={[33.684422, 73.047882]}
-                zoom={12}
-                style={{ height: "100%", width: "100%" }}
-                className="z-10  "
-              >
-                <TileLayer
-                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                  attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-                />
-                {locations.map((location) => (
-                  <Marker
-                    key={location.id}
-                    position={[location.lat, location.lng]}
-                    icon={createCustomIcon(2)}
-                  >
-                    <Popup>{location.name}</Popup>
-                  </Marker>
-                ))}
-              </MapContainer>
-            </div>
+            {formData.showGoogleMap && (
+              <div className="100% md:h-[400px] h-[500px]  ">
+                <MapContainer
+                  center={[33.684422, 73.047882]}
+                  zoom={12}
+                  style={{ height: "100%", width: "100%" }}
+                  className="z-10  "
+                >
+                  <TileLayer
+                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                  />
+                  {locations.map((location) => (
+                    <Marker
+                      key={location.id}
+                      position={[location.lat, location.lng]}
+                      icon={createCustomIcon(2)}
+                    >
+                      <Popup>{location.name}</Popup>
+                    </Marker>
+                  ))}
+                </MapContainer>
+              </div>
+            )}
           </div>
           <div className="lg:w-[39%] custom-shadow h-full  rounded-xl   lg:mt-0 mt-5 ">
             <div className="py-7 px-9 border-b border-[#8D8D8D]">
               <h2 className="text-xl custom-semibold mb-5">Host Details</h2>
               <div className="flex">
                 <img
-                  src="/kids-dance-school-ballet-hiphop-street-funky-modern-dancers_155003-2610.png"
+                  src={formData.host.profilePicPreview}
                   alt=""
                   className="h-28 w-28 object-cover object-center rounded-md"
                 />
                 <div className="ml-3">
-                  <h4 className="text-lg custom-medium">The Entertainer</h4>
-                  <p className="text-sm custom-light">
-                    Lorem ipsum dolor sit amet consectetur. Amet nisl congue.
-                  </p>
+                  <h4 className="text-lg custom-medium">
+                    {formData.host.name}
+                  </h4>
+                  <p className="text-sm custom-light">{formData.host.email}</p>
                 </div>
               </div>
               <div>
                 <h5 className="my-4 custom-medium text-lg">About The Host:</h5>
-                <p className="text-sm custom-light">
-                  Lorem ipsum dolor sit amet consectetur. Sed nulla nascetur
-                  volutpat enim eget tincidunt sed enim. Lacus cursus proin ut
-                  luctus risus nisl. Suspendisse tellus egestas dictum accumsan.
-                </p>
+                <p className="text-sm custom-light">{formData.host.about}</p>
                 <p className="text-sm custom-light my-3">
                   <span className="custom-medium text-lg mr-2">
                     Operational Hours:
                   </span>
-                  9AM-5PM
+                  {formData.startingHours} - {formData.endingHours}
                 </p>
 
                 <p className="text-sm custom-light my-3">
                   <span className="custom-medium text-lg mr-2">
                     Website Link:
                   </span>
-                  http://www.thetoyshop.pk
+                  {formData.host.website}
                 </p>
                 <h5 className="my-4 custom-medium text-lg">Location</h5>
-                <p className="text-sm custom-light">
-                  Lorem ipsum dolor sit amet consectetur. In quisque
-                  sollicitudin blandit sed velit elit augue eget.
-                </p>
+                <p className="text-sm custom-light">{formData.location}</p>
               </div>
             </div>
             <div className="pb-7 pt-2 px-9 w-full ">
               <h5 className="mb-4  text-xl custom-semibold">
-                Activity Location
+                {formData.location}
               </h5>
               <p className="text-sm custom-light">
                 The Entertainer Toy Shop - PWD Islamabad (Plot 1, Block-A,
@@ -381,7 +545,7 @@ const PostPage = () => {
                   <input
                     type="text"
                     readOnly
-                    value={currentUrl}
+                    value={`${window.location.origin}/activity/${formData.activityId}`}
                     className="flex-grow px-4 py-2  text-gray-800 border-none outline-none"
                   />
                   <button
@@ -412,17 +576,17 @@ const PostPage = () => {
                   sliderRef = slider;
                 }}
               >
-                {activityCards.map((activity, index) => (
+                {relatedActivities.map((activity, index) => (
                   <div key={index}>
                     <FeaturedCard
                       title={activity.title}
-                      duration={activity.duration}
-                      date={activity.date}
-                      ageRange={activity.ageRange}
-                      reviews={activity.reviews}
-                      rating={activity.rating}
-                      price={activity.price}
-                      imageUrl={activity.imageUrl}
+                      duration={activity.duration || "Duration 2 hours"}
+                      date={activity.date || "2nd July – 2nd August"}
+                      ageRange={activity.ageRange || "6 – 12 Years"}
+                      reviews={activity.reviews || 584}
+                      rating={activity.rating || 4.5}
+                      price={activity.price || 35.0}
+                      imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
                       sponsored={activity.sponsored}
                     />
                   </div>
@@ -445,46 +609,45 @@ const PostPage = () => {
         </section>
         {/* Featured Activities */}
 
-        <section className="h-full w-full mb-16 ">
+        <section className="h-full w-full mb-16">
           <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Featured Activities
             </h2>
             <div className="w-full pb-5 relative">
-              <Slider
-                {...settings}
-                ref={(slider) => {
-                  sliderRef2 = slider;
-                }}
-              >
-                {activityCards.map((activity, index) => (
-                  <div key={index}>
+              <Slider {...settings2} ref={sliderRef2}>
+                {featuredActivities.map((activity, index) => (
+                  <div key={index} className="px-2">
                     <FeaturedCard
                       title={activity.title}
-                      duration={activity.duration}
-                      date={activity.date}
-                      ageRange={activity.ageRange}
-                      reviews={activity.reviews}
-                      rating={activity.rating}
-                      price={activity.price}
-                      imageUrl={activity.imageUrl}
+                      duration={activity.duration || "Duration 2 hours"}
+                      date={activity.date || "2nd July – 2nd August"}
+                      ageRange={activity.ageRange || "6 – 12 Years"}
+                      reviews={activity.reviews || 584}
+                      rating={activity.rating || 4.5}
+                      price={activity.price || 35.0}
+                      imageUrl={activity.imageUrls?.[0]}
                       sponsored={activity.sponsored}
                     />
                   </div>
                 ))}
               </Slider>
-              <button
-                className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                onClick={() => previous(sliderRef2)}
-              >
-                <FaChevronLeft />
-              </button>
-              <button
-                className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-                onClick={() => next(sliderRef2)}
-              >
-                <FaChevronRight />
-              </button>
+              {featuredActivities.length > slidesToShow && (
+                <>
+                  <button
+                    className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                    onClick={previous}
+                  >
+                    <FaChevronLeft />
+                  </button>
+                  <button
+                    className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                    onClick={next}
+                  >
+                    <FaChevronRight />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>

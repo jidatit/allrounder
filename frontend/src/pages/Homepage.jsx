@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import Layout from "../UI Components/Layout";
 import CategoryCard from "../UI Components/CategoryCard";
 import FeaturedCard from "../UI Components/FeaturedCard";
@@ -6,8 +6,28 @@ import { Link } from "react-router-dom";
 import { IoIosSearch } from "react-icons/io";
 import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
+import { collection, getDocs } from "firebase/firestore";
+import { db } from "../config/firebase";
 
 const Homepage = () => {
+  const [featuredActivities, setFeaturedActivities] = useState([]);
+  useEffect(() => {
+    fetchFeaturedActivities();
+    // ... your existing useEffect logic
+  }, []);
+  const fetchFeaturedActivities = async () => {
+    try {
+      const featuredActivitiesRef = collection(db, "featuredActivities");
+      const querySnapshot = await getDocs(featuredActivitiesRef);
+      const featuredActivitiesData = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+      setFeaturedActivities(featuredActivitiesData);
+    } catch (error) {
+      console.error("Error fetching featured activities:", error);
+    }
+  };
   const CategoryCards = [
     {
       title: "Team Sports",
@@ -148,7 +168,74 @@ const Homepage = () => {
       },
     ],
   };
+  let sliderRef2 = useRef(null);
+  const [slidesToShow, setSlidesToShow] = useState(3);
 
+  useEffect(() => {
+    const updateSlidesToShow = () => {
+      if (window.innerWidth < 600) {
+        setSlidesToShow(1);
+      } else if (window.innerWidth < 1024) {
+        setSlidesToShow(2);
+      } else {
+        setSlidesToShow(3);
+      }
+    };
+
+    updateSlidesToShow();
+    window.addEventListener("resize", updateSlidesToShow);
+
+    return () => window.removeEventListener("resize", updateSlidesToShow);
+  }, []);
+  const settings2 = {
+    dots: true,
+    infinite: featuredActivities.length > 1,
+    speed: 500,
+    slidesToShow: Math.min(4, featuredActivities.length),
+    slidesToScroll: 1,
+    autoplay: featuredActivities.length > 1,
+    autoplaySpeed: 3000,
+    centerMode: false, // Disabled centerMode to prevent extra spacing
+    centerPadding: "0px",
+    responsive: [
+      {
+        breakpoint: 1360,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: Math.min(2, featuredActivities.length),
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+      {
+        breakpoint: 696,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+          centerMode: false,
+          centerPadding: "0px",
+        },
+      },
+    ],
+  };
   return (
     <main>
       <section>
@@ -201,48 +288,45 @@ const Homepage = () => {
         </div>
       </section>
       {/* FEATURED CARD */}
-      <section className="h-full w-full   ">
-        <div className="h-full w-full px-4 sm:px-8 pt-20 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+      <section className="h-full w-full mb-16">
+        <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
             Featured Activities
           </h2>
-
           <div className="w-full pb-5 relative">
-            <Slider
-              {...settings}
-              ref={(slider) => {
-                sliderRef = slider;
-              }}
-            >
-              {activityCards.map((activity, index) => (
-                <div key={index}>
+            <Slider {...settings2} ref={sliderRef2}>
+              {featuredActivities.map((activity, index) => (
+                <div key={index} className="px-2">
                   <FeaturedCard
                     title={activity.title}
-                    duration={activity.duration}
-                    date={activity.date}
-                    ageRange={activity.ageRange}
-                    reviews={activity.reviews}
-                    rating={activity.rating}
-                    price={activity.price}
-                    imageUrl={activity.imageUrl}
+                    duration={activity.duration || "Duration 2 hours"}
+                    date={activity.date || "2nd July – 2nd August"}
+                    ageRange={activity.ageRange || "6 – 12 Years"}
+                    reviews={activity.reviews || 584}
+                    rating={activity.rating || 4.5}
+                    price={activity.price || 35.0}
+                    imageUrl={activity.imageUrls?.[0]}
                     sponsored={activity.sponsored}
                   />
                 </div>
               ))}
             </Slider>
-
-            <button
-              className="button absolute top-[50%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-              onClick={previous}
-            >
-              <FaChevronLeft />
-            </button>
-            <button
-              className="button absolute top-[50%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-              onClick={next}
-            >
-              <FaChevronRight />
-            </button>
+            {featuredActivities.length > slidesToShow && (
+              <>
+                <button
+                  className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                  onClick={previous}
+                >
+                  <FaChevronLeft />
+                </button>
+                <button
+                  className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                  onClick={next}
+                >
+                  <FaChevronRight />
+                </button>
+              </>
+            )}
           </div>
           <div className="flex item justify-center mt-4">
             <Link

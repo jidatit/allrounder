@@ -1,4 +1,3 @@
-import react from "react";
 import { Link } from "react-router-dom";
 
 const BlogCard = ({ image, title, author, date }) => {
@@ -12,10 +11,11 @@ const BlogCard = ({ image, title, author, date }) => {
 
       {/* Card Content */}
       <div className="p-4">
-        <h3 className="lg:text-2xl sm:text-xl text-lg custom-semibold">
+        <h3 className="lg:text-2xl sm:text-xl text-lg  custom-semibold">
           {title}
         </h3>
-        <button className="w-[110px] h-[33px]  md:w-[137px] my-4  bg-[#E55938] rounded-3xl text-xs md:text-sm  text-white custom-semibold flex items-center justify-center">
+
+        <button className="w-[110px] h-[33px] md:w-[137px] my-4 bg-[#E55938] rounded-3xl text-xs md:text-sm  text-white custom-semibold flex items-center justify-center">
           Read More
         </button>
 

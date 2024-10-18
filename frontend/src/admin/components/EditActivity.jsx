@@ -1,0 +1,726 @@
+import React, { useEffect, useState } from "react";
+import { Camera, Plus, Search, X } from "lucide-react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { db, storage } from "../../config/firebase";
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  getDocs,
+  query,
+  serverTimestamp,
+  setDoc,
+  updateDoc,
+  where,
+} from "firebase/firestore";
+import { toast } from "react-toastify";
+import { useParams } from "react-router-dom";
+
+const EditActivityComponent = () => {
+  const { activityIdParam } = useParams();
+
+  const [loading, setLoading] = useState(true);
+  const [formData, setFormData] = useState({
+    activityId: "",
+    images: Array(3).fill(null),
+    imagesPreviews: Array(3).fill(null),
+    title: "",
+    description: "",
+    details: [""],
+    location: "",
+    hashtags: [""],
+    category: "",
+    showGoogleMap: false,
+    host: {
+      name: "",
+      phone: "",
+      email: "",
+      about: "",
+      website: "",
+      profilePic: null,
+      profilePicPreview: null,
+    },
+    startingHours: "",
+    endingHours: "",
+  });
+
+  // Fetch and populate formData when the component mounts
+
+  const categories = [
+    "Sports",
+    "Music",
+    "Art",
+    "Education",
+    "Technology",
+    "Food",
+    "Travel",
+    "Other",
+  ];
+
+  useEffect(() => {
+    const fetchActivityData = async () => {
+      try {
+        setLoading(true);
+        console.log("activityIdParam:", activityIdParam); // Log the param to check
+
+        const activitiesRef = collection(db, "activities");
+        const q = query(
+          activitiesRef,
+          where("activityId", "==", Number(activityIdParam)) // Ensure it’s a number if needed
+        );
+        const querySnapshot = await getDocs(q);
+
+        if (querySnapshot.empty) {
+          throw new Error("Activity not found");
+        }
+
+        // Get the first matching document
+        const activityDoc = querySnapshot.docs[0];
+        const activityData = activityDoc.data();
+        console.log("activityData", activityData);
+
+        // Update formData with fetched data
+        setFormData({
+          ...formData,
+          activityId: activityData.activityId,
+          images: activityData.imageUrls || Array(3).fill(null),
+          imagesPreviews: activityData.imageUrls || Array(3).fill(null),
+          title: activityData.title || "",
+          description: activityData.description || "",
+          details: activityData.details?.length ? activityData.details : [""],
+          location: activityData.location || "",
+          hashtags: activityData.hashtags?.length
+            ? activityData.hashtags
+            : [""],
+          category: activityData.category || "",
+          showGoogleMap: activityData.showGoogleMap || false,
+          host: {
+            name: activityData.host?.name || "",
+            phone: activityData.host?.phone || "",
+            email: activityData.host?.email || "",
+            about: activityData.host?.about || "",
+            website: activityData.host?.website || "",
+            profilePic: null,
+            profilePicPreview: activityData.host?.profilePicUrl || null,
+          },
+          startingHours: activityData.startingHours || "",
+          endingHours: activityData.endingHours || "",
+          documentId: activityDoc.id, // Store the document ID for updates
+        });
+      } catch (error) {
+        console.error("Error fetching activity:", error);
+        toast.error("Failed to load activity data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (activityIdParam) {
+      fetchActivityData();
+    }
+  }, [activityIdParam]);
+
+  const handleImageUpload = (index, e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const newImages = [...formData.images];
+      const newPreviews = [...formData.imagesPreviews];
+      newImages[index] = file;
+      newPreviews[index] = URL.createObjectURL(file);
+      setFormData({
+        ...formData,
+        images: newImages,
+        imagesPreviews: newPreviews,
+      });
+    }
+  };
+
+  const handleProfilePicUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setFormData({
+        ...formData,
+        host: {
+          ...formData.host,
+          profilePic: file,
+          profilePicPreview: URL.createObjectURL(file),
+        },
+      });
+    }
+  };
+
+  const addDetail = () => {
+    setFormData({
+      ...formData,
+      details: [...formData.details, ""],
+    });
+  };
+
+  const removeDetail = (index) => {
+    const newDetails = formData.details.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      details: newDetails,
+    });
+  };
+
+  const handleDetailChange = (index, value) => {
+    const newDetails = [...formData.details];
+    newDetails[index] = value;
+    setFormData({
+      ...formData,
+      details: newDetails,
+    });
+  };
+
+  const addHashtag = () => {
+    setFormData({
+      ...formData,
+      hashtags: [...formData.hashtags, ""],
+    });
+  };
+
+  const removeHashtag = (index) => {
+    const newHashtags = formData.hashtags.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      hashtags: newHashtags,
+    });
+  };
+
+  const handleHashtagChange = (index, value) => {
+    const newHashtags = [...formData.hashtags];
+    newHashtags[index] = value;
+    setFormData({
+      ...formData,
+      hashtags: newHashtags,
+    });
+  };
+  const uploadImages = async (images, activityId) => {
+    const uploadedUrls = [];
+    console.log("images", images);
+    try {
+      for (let i = 0; i < images.length; i++) {
+        if (images[i]) {
+          console.log("image", images[i]);
+
+          // Generate a unique name for each image
+          const imageRef = ref(
+            storage,
+            `activities/${activityId}/image-${Date.now()}-${i}`
+          );
+
+          await uploadBytes(imageRef, images[i]);
+          const url = await getDownloadURL(imageRef);
+          uploadedUrls.push(url);
+        }
+      }
+      console.log("uploadedUrls", uploadedUrls);
+      return uploadedUrls;
+    } catch (error) {
+      console.error("Error uploading images:", error);
+      throw new Error("Failed to upload images");
+    }
+  };
+
+  const uploadProfilePic = async (profilePic, activityId) => {
+    if (!profilePic) return null;
+
+    try {
+      const imageRef = ref(storage, `activities/${activityId}/profile-pic`);
+      await uploadBytes(imageRef, profilePic);
+      const url = await getDownloadURL(imageRef);
+      return url;
+    } catch (error) {
+      console.error("Error uploading profile pic:", error);
+      throw new Error("Failed to upload profile picture");
+    }
+  };
+
+  const generateRandomActivityId = () => {
+    return Math.floor(100 + Math.random() * 900); // Generates a random number between 100 and 999
+  };
+
+  const editActivity = async (formData) => {
+    try {
+      const activityRef = doc(db, "activities", formData.documentId);
+
+      // ... (previous code for updating other fields remains the same)
+
+      // Fetch current image URLs
+      const docSnapshot = await getDoc(activityRef);
+      const currentImageUrls = docSnapshot.data().imageUrls || [];
+
+      // Create a new array for updated image URLs, starting with the current URLs
+      const updatedImageUrls = [...currentImageUrls];
+
+      // Loop through the images in the formData
+      for (let i = 0; i < formData.images.length; i++) {
+        if (formData.images[i] instanceof File) {
+          // If there's a new image (File object), upload it and update the corresponding URL
+          const newImageUrls = await uploadImages(
+            [formData.images[i]],
+            formData.activityId
+          );
+          if (newImageUrls.length > 0) {
+            updatedImageUrls[i] = newImageUrls[0]; // Replace the URL at the current index
+          }
+        } else if (typeof formData.images[i] === "string") {
+          // If it's a string (existing URL), keep it as is
+          updatedImageUrls[i] = formData.images[i];
+        }
+        // If formData.images[i] is undefined or null, we don't change updatedImageUrls[i],
+        // effectively keeping the existing URL (if any) at that index
+      }
+
+      // Ensure we don't have undefined elements in our array
+      const finalImageUrls = updatedImageUrls.filter(
+        (url) => url !== undefined
+      );
+
+      // Update the document with the new merged image URLs
+      await updateDoc(activityRef, {
+        imageUrls: finalImageUrls,
+      });
+
+      // ... (rest of the function remains the same)
+    } catch (error) {
+      console.error("Error editing activity:", error);
+      throw new Error(`Failed to edit activity: ${error.message}`);
+    }
+  };
+  const handleEditSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      setLoading(true);
+      const updatedActivityId = await editActivity(formData);
+      toast.success(
+        `Activity updated successfully with ID: ${updatedActivityId}`
+      );
+    } catch (error) {
+      console.error("Form submission error:", error);
+      toast.error(error.message || "Error submitting form");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div role="status">
+          <svg
+            aria-hidden="true"
+            className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
+            viewBox="0 0 100 101"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z"
+              fill="currentColor"
+            />
+            <path
+              d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z"
+              fill="currentFill"
+            />
+          </svg>
+          <span className="sr-only">Loading...</span>
+        </div>
+      </div>
+    );
+  }
+  // Function to fetch a single activity
+  //   const getActivity = async (activityId) => {
+  //     try {
+  //       const docRef = doc(db, "activities");
+  //       const docSnap = await getDoc(docRef);
+
+  //       if (docSnap.exists()) {
+  //         return {
+  //           id: docSnap.id,
+  //           ...docSnap.data(),
+  //         };
+  //       } else {
+  //         throw new Error("Activity not found");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error fetching activity:", error);
+  //       throw error;
+  //     }
+  //   };
+
+  //   // Function to fetch activities with filters
+  //   const getActivities = async (filters = {}) => {
+  //     try {
+  //       let q = collection(db, "activities");
+
+  //       // Add filters
+  //       if (filters.category) {
+  //         q = query(q, where("category", "==", filters.category));
+  //       }
+
+  //       if (filters.status) {
+  //         q = query(q, where("status", "==", filters.status));
+  //       }
+
+  //       const querySnapshot = await getDocs(q);
+  //       return querySnapshot.docs.map((doc) => ({
+  //         id: doc.id,
+  //         ...doc.data(),
+  //       }));
+  //     } catch (error) {
+  //       console.error("Error fetching activities:", error);
+  //       throw error;
+  //     }
+  //   };
+
+  return (
+    <div className="w-full mx-auto p-6">
+      <div className="bg-white rounded-lg shadow-sm p-6">
+        <h1 className="text-2xl font-semibold mb-6">Create Activity</h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column */}
+          <div className="lg:col-span-2">
+            {/* Images */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Images</label>
+              <div className="grid grid-cols-3 gap-4">
+                {formData.images.map((_, index) => (
+                  <div key={index} className="relative">
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={(e) => handleImageUpload(index, e)}
+                      className="hidden"
+                      id={`image-${index}`}
+                    />
+                    <label
+                      htmlFor={`image-${index}`}
+                      className="block w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                    >
+                      {formData.imagesPreviews[index] ? (
+                        <img
+                          src={formData.imagesPreviews[index]}
+                          alt={`Upload ${index + 1}`}
+                          className="w-full h-full object-cover rounded-lg"
+                        />
+                      ) : (
+                        <Camera className="w-8 h-8 text-gray-400" />
+                      )}
+                    </label>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Title */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Title</label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) =>
+                  setFormData({ ...formData, title: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+              />
+            </div>
+
+            {/* Description */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">
+                Description
+              </label>
+              <textarea
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none min-h-[120px]"
+              />
+            </div>
+
+            {/* Details */}
+            <div className="mb-6">
+              <div className="flex justify-between w-full">
+                <label className="block text-sm font-medium mb-2">
+                  Details (points)
+                </label>
+                <button
+                  onClick={addDetail}
+                  className="mb-2 text-white bg-red-500 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                >
+                  <Plus className="w-4 h-4" />
+                </button>
+              </div>
+
+              {formData.details.map((detail, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <input
+                    type="text"
+                    value={detail}
+                    onChange={(e) => handleDetailChange(index, e.target.value)}
+                    className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  {index > 0 && (
+                    <button
+                      onClick={() => removeDetail(index)}
+                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Location */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Location</label>
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={formData.location}
+                  onChange={(e) =>
+                    setFormData({ ...formData, location: e.target.value })
+                  }
+                  className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  placeholder="Enter location"
+                />
+                <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
+                  Search Location
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Right Column */}
+          <div className="lg:col-span-1">
+            {/* Hashtags */}
+            <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
+              <div className="mb-4">
+                <div className="flex justify-between items-center w-full">
+                  <label className="block text-sm font-medium mb-2">
+                    Add Hashtags
+                  </label>
+                  <button
+                    onClick={addHashtag}
+                    className="mb-2 text-white bg-red-500 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                  >
+                    <Plus className="w-4 h-4" />
+                  </button>
+                </div>
+
+                {formData.hashtags.map((hashtag, index) => (
+                  <div key={index} className="flex gap-2 mb-2">
+                    <input
+                      type="text"
+                      value={hashtag}
+                      onChange={(e) =>
+                        handleHashtagChange(index, e.target.value)
+                      }
+                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                      placeholder="#hashtag"
+                    />
+                    {index > 0 && (
+                      <button
+                        onClick={() => removeHashtag(index)}
+                        className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Category */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">
+                  Select Category
+                </label>
+                <select
+                  value={formData.category}
+                  onChange={(e) =>
+                    setFormData({ ...formData, category: e.target.value })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                      {category}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Google Map Toggle */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium mb-2">
+                  Show Google Map
+                </label>
+                <div className="flex items-center gap-4">
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      checked={formData.showGoogleMap}
+                      onChange={() =>
+                        setFormData({ ...formData, showGoogleMap: true })
+                      }
+                      className="w-4 h-4 text-blue-500"
+                    />
+                    Yes
+                  </label>
+                  <label className="flex items-center gap-2">
+                    <input
+                      type="radio"
+                      checked={!formData.showGoogleMap}
+                      onChange={() =>
+                        setFormData({ ...formData, showGoogleMap: false })
+                      }
+                      className="w-4 h-4 text-blue-500"
+                    />
+                    No
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            {/* Host Details */}
+            <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="flex justify-between items-start mb-4 w-full">
+                <label className="block text-sm font-medium w-[30%]">
+                  Host Details
+                </label>
+              </div>
+
+              <div className="space-y-4">
+                <div className="relative w-[70%]">
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleProfilePicUpload}
+                    className="hidden w-full flex flex-col gap-y-4"
+                    id="profile-pic"
+                  />
+
+                  <label
+                    htmlFor="profile-pic"
+                    className="block w-full h-32 bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
+                  >
+                    {formData.host.profilePicPreview ? (
+                      <img
+                        src={formData.host.profilePicPreview}
+                        alt="Profile"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex flex-col gap-y-3 items-center justify-center text-gray-400">
+                        <Camera className="w-8 h-8 text-gray-400" />
+                        Add Profile Pic
+                      </div>
+                    )}
+                  </label>
+                </div>
+                <input
+                  type="text"
+                  placeholder="Host name"
+                  value={formData.host.name}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      host: { ...formData.host, name: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                <input
+                  type="tel"
+                  placeholder="Phone Number"
+                  value={formData.host.phone}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      host: { ...formData.host, phone: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                <input
+                  type="email"
+                  placeholder="Email Address"
+                  value={formData.host.email}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      host: { ...formData.host, email: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                <textarea
+                  placeholder="About The Host"
+                  value={formData.host.about}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      host: { ...formData.host, about: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                <input
+                  type="url"
+                  placeholder="Website Link"
+                  value={formData.host.website}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      host: { ...formData.host, website: e.target.value },
+                    })
+                  }
+                  className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                />
+                <div className="grid grid-cols-2 gap-4">
+                  <input
+                    type="time"
+                    value={formData.startingHours}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        startingHours: e.target.value,
+                      })
+                    }
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                  <input
+                    type="time"
+                    value={formData.endingHours}
+                    onChange={(e) =>
+                      setFormData({ ...formData, endingHours: e.target.value })
+                    }
+                    className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button
+          type="submit"
+          disabled={loading}
+          onClick={handleEditSubmit}
+          className="w-fit px-4 py-2 bg-red-500 text-white rounded disabled:bg-gray-400"
+        >
+          {loading ? "Updating..." : "Update Activity"}
+        </button>
+      </div>
+    </div>
+  );
+};
+
+export default EditActivityComponent;

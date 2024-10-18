@@ -1,10 +1,16 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { CgMenuLeft } from "react-icons/cg";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import { LuPhone } from "react-icons/lu";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import L from "leaflet";
 import { Link } from "react-router-dom";
+import { MdDeleteOutline, MdStarRate } from "react-icons/md";
+import { FaEdit } from "react-icons/fa";
+import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import { db } from "../config/firebase";
+import { toast } from "react-toastify";
+import { useAuth } from "../context/authContext";
 
 const createCustomIcon = (number) => {
   return L.divIcon({
@@ -21,6 +27,28 @@ const TeamSportsCategory = () => {
     { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
     { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
   ];
+  const [activities, setActivities] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "activities"));
+        const activitiesData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id,
+        }));
+        setActivities(activitiesData);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8 pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
@@ -43,46 +71,21 @@ const TeamSportsCategory = () => {
             {/* Card Container */}
 
             <div className="  lg:w-[60%] h-[860px]  p-4 overflow-auto scrollbar-custom">
-              <BlogCard
-                name={"Toy shop - Grand launch, PWD Islamabad"}
-                address={"1234 Main Street New York, NY 10024"}
-                contact={"(917) 888-1234"}
-                url={
-                  "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                }
-              />
-              <BlogCard
-                name={"Toy shop - Grand launch, PWD Islamabad"}
-                address={"1234 Main Street New York, NY 10024"}
-                contact={"(917) 888-1234"}
-                url={
-                  "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                }
-              />
-              <BlogCard
-                name={"Toy shop - Grand launch, PWD Islamabad"}
-                address={"1234 Main Street New York, NY 10024"}
-                contact={"(917) 888-1234"}
-                url={
-                  "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                }
-              />
-              <BlogCard
-                name={"Toy shop - Grand launch, PWD Islamabad"}
-                address={"1234 Main Street New York, NY 10024"}
-                contact={"(917) 888-1234"}
-                url={
-                  "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                }
-              />
-              <BlogCard
-                name={"Toy shop - Grand launch, PWD Islamabad"}
-                address={"1234 Main Street New York, NY 10024"}
-                contact={"(917) 888-1234"}
-                url={
-                  "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                }
-              />
+              {activities.map((activity) => (
+                <BlogCard
+                  key={activity.docId}
+                  activityIdParam={activity.activityId}
+                  docId={activity.docId}
+                  name={activity.title}
+                  address={activity.location}
+                  contact={activity.host?.phone || "N/A"}
+                  url={
+                    activity.imageUrls?.[0] ||
+                    "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
+                  }
+                  activityData={activity}
+                />
+              ))}
             </div>
             <div className=" lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] p-4">
               <MapContainer
@@ -113,28 +116,110 @@ const TeamSportsCategory = () => {
   );
 };
 
-const BlogCard = ({ name, address, contact, url }) => {
+const BlogCard = ({
+  name,
+  address,
+  contact,
+  url,
+  activityIdParam,
+  docId,
+  activityData,
+}) => {
+  const { currentUser } = useAuth();
+  const handleDelete = async () => {
+    // Add delete functionality here
+    if (window.confirm("Are you sure you want to delete this activity?")) {
+      // Implement delete logic
+    }
+  };
+  const handleAddToFeature = async () => {
+    try {
+      // Check if the activity is already featured
+      const featuredActivitiesRef = collection(db, "featuredActivities");
+      const q = query(
+        featuredActivitiesRef,
+        where("activityId", "==", activityIdParam)
+      );
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        toast.info("This activity is already featured!");
+        return;
+      }
+
+      // Add the activity to the featuredActivities collection
+      await addDoc(featuredActivitiesRef, {
+        ...activityData,
+        activityId: activityIdParam,
+        featuredAt: new Date(),
+      });
+
+      toast.success("Activity added to featured list!");
+    } catch (error) {
+      console.error("Error adding activity to featured list:", error);
+      toast.error("Failed to add activity to featured list");
+    }
+  };
   return (
     <Link
-      to={"/post/1"}
-      className=" flex custom-shadow md:flex-row flex-col rounded-xl overflow-hidden mb-6 p-4 min-h-68 "
+      to={`/post/${activityIdParam}`}
+      className="flex flex-col items-start gap-5 justify-start p-3 lg:p-4 w-full"
     >
-      <div className="md:w-[50%]  w-full">
-        <img
-          src={url}
-          alt="img here"
-          className="w-full object-cover object-center"
-        />
-      </div>
-      <div className=" flex flex-col items-start gap-5 justify-start p-3 lg:p-4">
-        <h3 className="custom-semibold text-lg   lg:text-2xl">{name}</h3>
-        <address className="custom-regular not-italic text-lg lg:text-xl ">
-          {address}
-        </address>
-        <p className="flex items-center  gap-2 text-lg lg:text-xl custom-regular">
-          <LuPhone />
-          {contact}
-        </p>
+      <div className="flex flex-col bg-white rounded-lg shadow-md overflow-hidden w-full">
+        <div className="flex p-4">
+          <div className="w-[40%] mr-4 h-[30vh]">
+            <img
+              src={url}
+              alt={name}
+              className="w-full h-full object-cover rounded-md"
+            />
+          </div>
+          <div className="w-2/3 flex flex-col justify-between">
+            <div>
+              <h3 className="text-xl font-semibold mb-2">{name}</h3>
+              <p className="text-gray-600 mb-2">{address}</p>
+              <p className="flex items-center text-gray-600">
+                <LuPhone className="mr-2" />
+                {contact}
+              </p>
+            </div>
+            <div className="flex justify-between items-center mt-4">
+              <button
+                onClick={(e) => {
+                  e.preventDefault(); // Prevent navigation
+                  handleAddToFeature();
+                }}
+                className="flex items-center bg-red-500 text-white rounded-full px-4 py-2 hover:bg-red-700"
+              >
+                <MdStarRate className="mr-1" />
+                Add to Feature
+              </button>
+
+              {currentUser?.userType === "admin" && (
+                <div className="flex items-center space-x-4">
+                  <Link
+                    to={`/AdminLayout/editActivity/${activityIdParam}`}
+                    className="flex items-center text-black"
+                    onClick={(e) => e.stopPropagation()} // Prevent navigation to activity details
+                  >
+                    <FaEdit className="mr-1" />
+                    Edit Activity
+                  </Link>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault(); // Prevent navigation
+                      handleDelete();
+                    }}
+                    className="flex items-center text-black hover:text-black"
+                  >
+                    <MdDeleteOutline className="mr-1" />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       </div>
     </Link>
   );

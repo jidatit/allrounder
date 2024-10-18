@@ -69,7 +69,7 @@ const FeaturedCard = ({
             </div>
             <div className="flex justify-between  flex-col items-end">
               <span className="text-xl font-bold text-[#E55938]">
-                ${price.toFixed(2)}
+                ${price?.toFixed(2)}
               </span>
               <span className="text-sm text-[#778088] custom-semibold  ">
                 per person

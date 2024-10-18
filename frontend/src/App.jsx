@@ -19,6 +19,9 @@ import AdminLayout from "./admin/layout/AdminLayout";
 import AdminDashboard from "./admin/pages/AdminDashboard";
 import "./index.css";
 import ResetPasswordFrom from "./pages/ResetPasswordFrom";
+import ActivityManagement from "./admin/pages/ActivityManagement";
+import CreateActivity from "./admin/components/AddActivity";
+import EditActivityComponent from "./admin/components/EditActivity";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -76,7 +79,7 @@ function App() {
                   path="/team-sport-category"
                   element={<TeamSportsCategory />}
                 />
-                <Route path="/post/:id" element={<PostPage />} />
+                <Route path="/post/:activityIdParam" element={<PostPage />} />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
@@ -118,6 +121,33 @@ function App() {
                   index
                   element={
                     currentUser ? <AdminDashboard /> : <Navigate to="/login" />
+                  }
+                />
+                <Route
+                  path="activityManagement"
+                  element={
+                    currentUser ? (
+                      <ActivityManagement />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+                <Route
+                  path="addActivity"
+                  element={
+                    currentUser ? <CreateActivity /> : <Navigate to="/login" />
+                  }
+                />
+                \{" "}
+                <Route
+                  path="editActivity/:activityIdParam"
+                  element={
+                    currentUser ? (
+                      <EditActivityComponent />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
                   }
                 />
               </Route>

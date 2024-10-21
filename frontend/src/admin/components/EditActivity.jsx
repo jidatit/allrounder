@@ -18,7 +18,7 @@ import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
 
 const EditActivityComponent = () => {
-  const { activityIdParam } = useParams();
+  const { activityIdParam, featureActivityParam } = useParams();
 
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
@@ -26,6 +26,7 @@ const EditActivityComponent = () => {
     images: Array(3).fill(null),
     imagesPreviews: Array(3).fill(null),
     title: "",
+    price: "",
     description: "",
     details: [""],
     location: "",
@@ -62,9 +63,12 @@ const EditActivityComponent = () => {
     const fetchActivityData = async () => {
       try {
         setLoading(true);
-        console.log("activityIdParam:", activityIdParam); // Log the param to check
-
-        const activitiesRef = collection(db, "activities");
+        let activitiesRef;
+        if (featureActivityParam === "featureActivityParam") {
+          activitiesRef = collection(db, "featuredActivities");
+        } else if (featureActivityParam !== "featureActivityParam") {
+          activitiesRef = collection(db, "activities");
+        }
         const q = query(
           activitiesRef,
           where("activityId", "==", Number(activityIdParam)) // Ensure it’s a number if needed
@@ -90,6 +94,7 @@ const EditActivityComponent = () => {
           description: activityData.description || "",
           details: activityData.details?.length ? activityData.details : [""],
           location: activityData.location || "",
+          price: activityData.price || "",
           hashtags: activityData.hashtags?.length
             ? activityData.hashtags
             : [""],
@@ -224,29 +229,9 @@ const EditActivityComponent = () => {
     }
   };
 
-  const uploadProfilePic = async (profilePic, activityId) => {
-    if (!profilePic) return null;
-
-    try {
-      const imageRef = ref(storage, `activities/${activityId}/profile-pic`);
-      await uploadBytes(imageRef, profilePic);
-      const url = await getDownloadURL(imageRef);
-      return url;
-    } catch (error) {
-      console.error("Error uploading profile pic:", error);
-      throw new Error("Failed to upload profile picture");
-    }
-  };
-
-  const generateRandomActivityId = () => {
-    return Math.floor(100 + Math.random() * 900); // Generates a random number between 100 and 999
-  };
-
   const editActivity = async (formData) => {
     try {
       const activityRef = doc(db, "activities", formData.documentId);
-
-      // ... (previous code for updating other fields remains the same)
 
       // Fetch current image URLs
       const docSnapshot = await getDoc(activityRef);
@@ -279,12 +264,45 @@ const EditActivityComponent = () => {
         (url) => url !== undefined
       );
 
-      // Update the document with the new merged image URLs
-      await updateDoc(activityRef, {
+      // Prepare the update object with all fields
+      const updateObject = {
+        activityId: formData.activityId,
+        title: formData.title,
+        description: formData.description,
+        details: formData.details,
+        location: formData.location,
+        price: formData.price,
+        hashtags: formData.hashtags,
+        category: formData.category,
+        showGoogleMap: formData.showGoogleMap,
+        startingHours: formData.startingHours,
+        endingHours: formData.endingHours,
         imageUrls: finalImageUrls,
-      });
+        host: {
+          name: formData.host.name,
+          phone: formData.host.phone,
+          email: formData.host.email,
+          about: formData.host.about,
+          website: formData.host.website,
+        },
+        updatedAt: serverTimestamp(),
+      };
 
-      // ... (rest of the function remains the same)
+      // If there's a new profile picture, upload it and add the URL to the update object
+      if (formData.host.profilePic instanceof File) {
+        const profilePicUrl = await uploadImages(
+          [formData.host.profilePic],
+          formData.activityId
+        );
+        if (profilePicUrl.length > 0) {
+          updateObject.host.profilePicUrl = profilePicUrl[0];
+        }
+      }
+
+      // Update the document with all fields
+      await updateDoc(activityRef, updateObject);
+
+      return formData.activityId;
     } catch (error) {
       console.error("Error editing activity:", error);
       throw new Error(`Failed to edit activity: ${error.message}`);
@@ -465,14 +483,12 @@ const EditActivityComponent = () => {
                     onChange={(e) => handleDetailChange(index, e.target.value)}
                     className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   />
-                  {index > 0 && (
-                    <button
-                      onClick={() => removeDetail(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => removeDetail(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -499,6 +515,20 @@ const EditActivityComponent = () => {
 
           {/* Right Column */}
           <div className="lg:col-span-1">
+            {/* Price */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Price</label>
+              <input
+                type="number"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Enter price"
+              />
+            </div>
+
             {/* Hashtags */}
             <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
               <div className="mb-4">
@@ -514,29 +544,28 @@ const EditActivityComponent = () => {
                   </button>
                 </div>
 
-                {formData.hashtags.map((hashtag, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={hashtag}
-                      onChange={(e) =>
-                        handleHashtagChange(index, e.target.value)
-                      }
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder="#hashtag"
-                    />
-                    {index > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {formData.hashtags.map((hashtag, index) => (
+                    <div key={index} className="flex w-[90%] gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={hashtag}
+                        onChange={(e) =>
+                          handleHashtagChange(index, e.target.value)
+                        }
+                        className="flex-1 px-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="#hashtag"
+                      />
                       <button
                         onClick={() => removeHashtag(index)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
                       >
                         <X className="w-5 h-5" />
                       </button>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-
               {/* Category */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">

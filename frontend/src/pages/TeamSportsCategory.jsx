@@ -3,11 +3,20 @@ import { CgMenuLeft } from "react-icons/cg";
 import { HiOutlineAdjustmentsHorizontal } from "react-icons/hi2";
 import { LuPhone } from "react-icons/lu";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
+import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import L from "leaflet";
 import { Link } from "react-router-dom";
 import { MdDeleteOutline, MdStarRate } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { addDoc, collection, getDocs, query, where } from "firebase/firestore";
+import {
+  addDoc,
+  collection,
+  deleteDoc,
+  doc,
+  getDocs,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
 import { toast } from "react-toastify";
 import { useAuth } from "../context/authContext";
@@ -29,7 +38,7 @@ const TeamSportsCategory = () => {
   ];
   const [activities, setActivities] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const [locationMap, setLocationMap] = useState([]);
   useEffect(() => {
     const fetchActivities = async () => {
       try {
@@ -48,13 +57,78 @@ const TeamSportsCategory = () => {
 
     fetchActivities();
   }, []);
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const querySnapshot = await getDocs(collection(db, "activities"));
+        const activitiesData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id,
+        }));
+        setActivities(activitiesData);
 
+        // Fetch the location coordinates using geocoding
+        const locationss = await Promise.all(
+          activitiesData.map(async (activity) => {
+            const provider = new OpenStreetMapProvider();
+            const results = await provider.search({ query: activity.location });
+            return {
+              id: activity.activityId,
+              name: activity.location,
+              lat: results[0]?.y,
+              lng: results[0]?.x,
+            };
+          })
+        );
+        setLocationMap(locationss);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const handleDelete = async (activityId) => {
+    try {
+      // Create a query to find the document with matching activityId
+      const activitiesRef = collection(db, "activities");
+      const q = query(activitiesRef, where("activityId", "==", activityId));
+
+      // Get the document that matches the activityId
+      const querySnapshot = await getDocs(q);
+
+      if (!querySnapshot.empty) {
+        // Get the first matching document
+        const documentToDelete = querySnapshot.docs[0];
+
+        // Delete the document using its document ID
+        await deleteDoc(doc(db, "activities", documentToDelete.id));
+
+        // Update the local state immediately
+        setActivities((prevActivities) =>
+          prevActivities.filter(
+            (activity) => activity.activityId !== activityId
+          )
+        );
+
+        toast.success("Activity deleted successfully");
+      } else {
+        toast.error("Activity not found");
+      }
+    } catch (error) {
+      console.error("Error deleting activity:", error);
+      toast.error("Error deleting activity: " + error.message);
+    }
+  };
   return (
-    <main className="h-full w-full ">
-      <section className="h-full w-full px-4 sm:px-8 pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
-        <div>
+    <main className="h-full w-screen ">
+      <section className="h-full w-full px-4 sm:px-8 pt-10 lg:px-16 mx-auto max-w-[1840px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+        <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl ">
-            Team Sports
+            All Activities
           </h2>
           {/* filter buttons */}
           <div className="flex gap-3 custom-medium mt-3 lg:mt-8">
@@ -67,10 +141,10 @@ const TeamSportsCategory = () => {
               <p className="text-sm">Filters</p>
             </button>
           </div>
-          <div className=" flex mt-3 lg:pt-8 pt-4 flex-col lg:flex-row ">
+          <div className=" w-full flex mt-3 lg:pt-8 pt-4 flex-col lg:flex-row ">
             {/* Card Container */}
 
-            <div className="  lg:w-[60%] h-[860px]  p-4 overflow-auto scrollbar-custom">
+            <div className=" w-[80%] h-[860px]  p-4 overflow-auto scrollbar-custom">
               {activities.map((activity) => (
                 <BlogCard
                   key={activity.docId}
@@ -84,6 +158,7 @@ const TeamSportsCategory = () => {
                     "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
                   }
                   activityData={activity}
+                  onDelete={handleDelete}
                 />
               ))}
             </div>
@@ -92,7 +167,7 @@ const TeamSportsCategory = () => {
                 center={[33.684422, 73.047882]}
                 zoom={12}
                 style={{ height: "100%", width: "100%" }}
-                className="z-10  "
+                className="z-10"
               >
                 <TileLayer
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -124,6 +199,7 @@ const BlogCard = ({
   activityIdParam,
   docId,
   activityData,
+  onDelete,
 }) => {
   const { currentUser } = useAuth();
   const handleDelete = async () => {
@@ -160,6 +236,27 @@ const BlogCard = ({
       toast.error("Failed to add activity to featured list");
     }
   };
+  let featureActivityParam = "simpleActivity";
+
+  const [featuredActivities, setFeaturedActivities] = useState([]);
+  useEffect(() => {
+    const fetchFeatures = async () => {
+      try {
+        const querySnapshot = await getDocs(
+          collection(db, "featuredActivities")
+        );
+        const activitiesData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id,
+        }));
+        setFeaturedActivities(activitiesData);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+      }
+    };
+
+    fetchFeatures();
+  }, [featuredActivities]);
   return (
     <Link
       to={`/post/${activityIdParam}`}
@@ -189,16 +286,27 @@ const BlogCard = ({
                   e.preventDefault(); // Prevent navigation
                   handleAddToFeature();
                 }}
-                className="flex items-center bg-red-500 text-white rounded-full px-4 py-2 hover:bg-red-700"
+                className="flex items-center bg-[#E55938] text-white rounded-full px-4 py-2 hover:bg-[#dd4826]"
               >
                 <MdStarRate className="mr-1" />
-                Add to Feature
+                {featuredActivities.some(
+                  (featured) => featured.activityId === activityIdParam
+                )
+                  ? "Featured Activity"
+                  : "Add to Feature"}
               </button>
 
               {currentUser?.userType === "admin" && (
                 <div className="flex items-center space-x-4">
                   <Link
-                    to={`/AdminLayout/editActivity/${activityIdParam}`}
+                    to={
+                      featuredActivities.some(
+                        (featured) => featured.activityId === activityIdParam
+                      )
+                        ? `/AdminLayout/editActivity/${activityIdParam}/${(featureActivityParam =
+                            "featureActivity")}`
+                        : `/AdminLayout/editActivity/${activityIdParam}/${featureActivityParam} `
+                    }
                     className="flex items-center text-black"
                     onClick={(e) => e.stopPropagation()} // Prevent navigation to activity details
                   >
@@ -208,7 +316,7 @@ const BlogCard = ({
                   <button
                     onClick={(e) => {
                       e.preventDefault(); // Prevent navigation
-                      handleDelete();
+                      onDelete(activityIdParam);
                     }}
                     className="flex items-center text-black hover:text-black"
                   >

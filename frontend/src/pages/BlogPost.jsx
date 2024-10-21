@@ -17,13 +17,6 @@ const BlogPost = () => {
     "Vivamus elementum semper nisi. Aenean vulputate eleifend tellus.",
   ];
 
-  const copyToClipboard = () => {
-    navigator.clipboard.writeText(currentUrl).then(() => {
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    });
-  };
-
   const blogPosts = [
     {
       id: 1,

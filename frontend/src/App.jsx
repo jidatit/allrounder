@@ -22,6 +22,7 @@ import ResetPasswordFrom from "./pages/ResetPasswordFrom";
 import ActivityManagement from "./admin/pages/ActivityManagement";
 import CreateActivity from "./admin/components/AddActivity";
 import EditActivityComponent from "./admin/components/EditActivity";
+import FeaturedActivities from "./admin/pages/FeaturedActivities";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -139,9 +140,19 @@ function App() {
                     currentUser ? <CreateActivity /> : <Navigate to="/login" />
                   }
                 />
+                <Route
+                  path="featuredActivity"
+                  element={
+                    currentUser ? (
+                      <FeaturedActivities />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
                 \{" "}
                 <Route
-                  path="editActivity/:activityIdParam"
+                  path="editActivity/:activityIdParam/:featureActivityParam"
                   element={
                     currentUser ? (
                       <EditActivityComponent />

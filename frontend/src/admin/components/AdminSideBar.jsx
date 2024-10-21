@@ -51,6 +51,33 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
               Activity Management
             </p>
           </Link>
+          <Link
+            to={"/AdminLayout/featuredActivity"}
+            className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group ${
+              activeItem === "Featured Activities"
+                ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
+                : "hover:bg-[#E55938] rounded-md hover:text-white"
+            }`}
+            onClick={() => handleItemClick("Featured Activities")}
+          >
+            <TbCalendarEvent
+              size={35}
+              className={`text-black group-hover:text-white ${
+                activeItem === "Featured Activities"
+                  ? "text-white"
+                  : "text-black"
+              }`}
+            />
+            <p
+              className={`w-full p-2 smd:p-3 rounded-md text-[14px] smd:text-[17px] custom-semibold group-hover:text-white ${
+                activeItem === "Featured Activities"
+                  ? "text-white"
+                  : "text-black"
+              }`}
+            >
+              Featured Activities
+            </p>
+          </Link>
           {/* <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group  ${

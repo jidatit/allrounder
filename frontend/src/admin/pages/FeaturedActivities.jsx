@@ -15,7 +15,7 @@ import {
 import { db } from "../../config/firebase";
 import { toast } from "react-toastify";
 
-const ActivityManagement = () => {
+const FeaturedActivities = () => {
   const [activities, setActivities] = useState([]);
 
   const [loading, setLoading] = useState(true);
@@ -23,7 +23,9 @@ const ActivityManagement = () => {
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "activities"));
+        const querySnapshot = await getDocs(
+          collection(db, "featuredActivities")
+        );
         const activitiesData = querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
@@ -42,7 +44,7 @@ const ActivityManagement = () => {
   const handleDelete = async (activityId) => {
     try {
       // Create a query to find the document with matching activityId
-      const activitiesRef = collection(db, "activities");
+      const activitiesRef = collection(db, "featuredActivities");
       const q = query(activitiesRef, where("activityId", "==", activityId));
 
       // Get the document that matches the activityId
@@ -53,7 +55,7 @@ const ActivityManagement = () => {
         const documentToDelete = querySnapshot.docs[0];
 
         // Delete the document using its document ID
-        await deleteDoc(doc(db, "activities", documentToDelete.id));
+        await deleteDoc(doc(db, "featuredActivities", documentToDelete.id));
 
         // Update the local state immediately
         setActivities((prevActivities) =>
@@ -71,15 +73,11 @@ const ActivityManagement = () => {
       toast.error("Error deleting activity: " + error.message);
     }
   };
+
   return (
-    <div className="flex flex-col min-h-[94.9vh] items-start justify-start overflow-x-hidden w-full gap-y-12 pr-4 z-50">
-      <div className="flex flex-row items-center justify-between w-full ">
-        <h1 className="text-xl font-bold text-black">Activity Management</h1>
-        <Link to="/AdminLayout/addActivity">
-          <button className="py-3 px-14 bg-[#E55938] text-white rounded-full shadow-lg cursor-pointer text-lg">
-            Create Event
-          </button>
-        </Link>
+    <div className="flex flex-col min-h-[80.9vh] items-start justify-start overflow-x-hidden w-full gap-y-12 z-50">
+      <div className="flex flex-row items-center justify-between w-full ml-4">
+        <h1 className="text-xl font-bold text-black">Featured Activities</h1>
       </div>
       <div className="p-4 scrollbar-custom w-full">
         {loading ? (
@@ -139,8 +137,8 @@ const BlogCard = ({
   activityData,
   onDelete,
 }) => {
-  const featureActivityParam = "simpleActivity";
   const [featuredActivities, setFeaturedActivities] = useState([]);
+  const featureActivityParam = "featureActivity";
   useEffect(() => {
     const fetchFeatures = async () => {
       try {
@@ -187,6 +185,7 @@ const BlogCard = ({
       toast.error("Failed to add activity to featured list");
     }
   };
+
   return (
     <Link
       to={`/post/${activityIdParam}`}
@@ -253,4 +252,4 @@ const BlogCard = ({
   );
 };
 
-export default ActivityManagement;
+export default FeaturedActivities;

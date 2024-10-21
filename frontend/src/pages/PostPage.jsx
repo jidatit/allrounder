@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
 const createCustomIcon = (number) => {
   return L.divIcon({
     className: "custom-marker",
@@ -23,6 +24,8 @@ const PostPage = () => {
   const { activityIdParam } = useParams();
   const [relatedActivities, setRelatedActivities] = useState([]);
   const [featuredActivities, setFeaturedActivities] = useState([]);
+  const [activities, setActivities] = useState([]);
+  const [locationMap, setLocationMap] = useState([]);
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -41,7 +44,56 @@ const PostPage = () => {
     }
   };
   const [slidesToShow, setSlidesToShow] = useState(3);
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        const activitiesRef = collection(db, "activities");
+        const q = query(
+          activitiesRef,
+          where("activityId", "==", Number(activityIdParam))
+        );
+        const querySnapshot = await getDocs(q);
 
+        const activitiesData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id,
+        }));
+        setActivities(activitiesData);
+        console.log("activitiesData", activitiesData);
+        // Fetch the location coordinates using geocoding
+        const locations = await Promise.all(
+          activitiesData.map(async (activity) => {
+            const provider = new OpenStreetMapProvider();
+            const results = await provider.search({ query: activity.location });
+            if (
+              results.length > 0 &&
+              results[0].y !== undefined &&
+              results[0].x !== undefined
+            ) {
+              return {
+                id: activity.activityId,
+                name: activity.location,
+                lat: results[0].y,
+                lng: results[0].x,
+              };
+            } else {
+              return null;
+            }
+          })
+        );
+        const validLocations = locations.filter(
+          (location) => location !== null
+        );
+        setLocationMap(validLocations);
+        setLoading(false);
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, [activityIdParam]);
   useEffect(() => {
     const updateSlidesToShow = () => {
       if (window.innerWidth < 600) {
@@ -379,6 +431,32 @@ const PostPage = () => {
       },
     ],
   };
+  function getBounds(locations) {
+    const latitudes = locations.map((loc) => loc.lat);
+    const longitudes = locations.map((loc) => loc.lng);
+    const minLat = Math.min(...latitudes);
+    const maxLat = Math.max(...latitudes);
+    const minLng = Math.min(...longitudes);
+    const maxLng = Math.max(...longitudes);
+    return [
+      [minLat, minLng],
+      [maxLat, maxLng],
+    ];
+  }
+
+  function getCenterCoordinates(locations) {
+    if (locations.length === 0) {
+      return [33.684422, 73.047882]; // Default center coordinates
+    }
+
+    const latitudes = locations.map((loc) => loc.lat);
+    const longitudes = locations.map((loc) => loc.lng);
+    const avgLat =
+      latitudes.reduce((sum, lat) => sum + lat, 0) / latitudes.length;
+    const avgLng =
+      longitudes.reduce((sum, lng) => sum + lng, 0) / longitudes.length;
+    return [avgLat, avgLng];
+  }
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
@@ -466,18 +544,22 @@ const PostPage = () => {
               Open In Google map
             </p>
             {formData.showGoogleMap && (
-              <div className="100% md:h-[400px] h-[500px]  ">
+              <div className="100% md:h-[400px] h-[500px]">
                 <MapContainer
-                  center={[33.684422, 73.047882]}
+                  center={getCenterCoordinates(locationMap)}
                   zoom={12}
                   style={{ height: "100%", width: "100%" }}
-                  className="z-10  "
+                  className="z-10"
+                  bounds={
+                    locationMap.length > 0 ? getBounds(locationMap) : undefined
+                  }
+                  boundsOptions={{ padding: [50, 50] }}
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
-                  {locations.map((location) => (
+                  {locationMap.map((location) => (
                     <Marker
                       key={location.id}
                       position={[location.lat, location.lng]}
@@ -522,8 +604,10 @@ const PostPage = () => {
                   </span>
                   {formData.host.website}
                 </p>
-                <h5 className="my-4 custom-medium text-lg">Location</h5>
-                <p className="text-sm custom-light">{formData.location}</p>
+                <div className="flex items-center gap-2">
+                  <h5 className=" custom-medium text-lg">Location:</h5>
+                  <p className="text-sm custom-light">{formData.location}</p>
+                </div>
               </div>
             </div>
             <div className="pb-7 pt-2 px-9 w-full ">
@@ -565,13 +649,26 @@ const PostPage = () => {
         {/* Related Activities */}
 
         <section className="h-full w-full mb-16 mt-10 ">
-          <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+          <div className="h-full w-full items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities
             </h2>
-            <div className="w-full pb-5 relative ">
+            <div
+              className="pb-5 relative"
+              style={{
+                width: `${
+                  featuredActivities.length === 2
+                    ? 50
+                    : featuredActivities.length === 3
+                    ? 60
+                    : featuredActivities.length >= 4
+                    ? 80
+                    : 50
+                }%`,
+              }}
+            >
               <Slider
-                {...settings}
+                {...settings2}
                 ref={(slider) => {
                   sliderRef = slider;
                 }}
@@ -592,29 +689,46 @@ const PostPage = () => {
                   </div>
                 ))}
               </Slider>
-              <button
-                className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                onClick={() => previous(sliderRef)}
-              >
-                <FaChevronLeft />
-              </button>
-              <button
-                className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-                onClick={() => next(sliderRef)}
-              >
-                <FaChevronRight />
-              </button>
+              {featuredActivities.length > slidesToShow && (
+                <>
+                  <button
+                    className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                    onClick={() => previous(sliderRef)}
+                  >
+                    <FaChevronLeft />
+                  </button>
+                  <button
+                    className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
+                    onClick={() => next(sliderRef)}
+                  >
+                    <FaChevronRight />
+                  </button>
+                </>
+              )}
             </div>
           </div>
         </section>
         {/* Featured Activities */}
 
         <section className="h-full w-full mb-16">
-          <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+          <div className="h-full w-full mx-auto justify-center items-center max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Featured Activities
             </h2>
-            <div className="w-full pb-5 relative">
+            <div
+              className="pb-5 relative"
+              style={{
+                width: `${
+                  featuredActivities.length === 2
+                    ? 50
+                    : featuredActivities.length === 3
+                    ? 60
+                    : featuredActivities.length >= 4
+                    ? 80
+                    : 50
+                }%`,
+              }}
+            >
               <Slider {...settings2} ref={sliderRef2}>
                 {featuredActivities.map((activity, index) => (
                   <div key={index} className="px-2">

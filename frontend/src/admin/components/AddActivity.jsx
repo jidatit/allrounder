@@ -15,12 +15,13 @@ import {
   where,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
+import { useNavigate } from "react-router-dom";
 
 const CreateActivity = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
-    activityId: "",
-    images: Array(3).fill(null),
-    imagesPreviews: Array(3).fill(null),
+    images: [],
+    imagesPreviews: [],
     title: "",
     description: "",
     details: [""],
@@ -28,14 +29,15 @@ const CreateActivity = () => {
     hashtags: [""],
     category: "",
     showGoogleMap: false,
+    price: "",
     host: {
+      profilePic: null,
+      profilePicPreview: null,
       name: "",
       phone: "",
       email: "",
       about: "",
       website: "",
-      profilePic: null,
-      profilePicPreview: null,
     },
     startingHours: "",
     endingHours: "",
@@ -51,20 +53,19 @@ const CreateActivity = () => {
     "Travel",
     "Other",
   ];
-
-  const handleImageUpload = (index, e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const newImages = [...formData.images];
-      const newPreviews = [...formData.imagesPreviews];
-      newImages[index] = file;
-      newPreviews[index] = URL.createObjectURL(file);
-      setFormData({
-        ...formData,
-        images: newImages,
-        imagesPreviews: newPreviews,
-      });
-    }
+  const [loading, setLoading] = useState(false);
+  const handleImageUpload = (e) => {
+    const files = Array.from(e.target.files);
+    const newImages = [...formData.images, ...files];
+    const newPreviews = [
+      ...formData.imagesPreviews,
+      ...files.map((file) => URL.createObjectURL(file)),
+    ];
+    setFormData({
+      ...formData,
+      images: newImages,
+      imagesPreviews: newPreviews,
+    });
   };
 
   const handleProfilePicUpload = (e) => {
@@ -173,6 +174,7 @@ const CreateActivity = () => {
   const createActivity = async (formData) => {
     try {
       // Generate a random 3-digit activity ID
+      setLoading(true);
       const activityId = generateRandomActivityId();
 
       // Log to ensure the ID is generated correctly
@@ -203,6 +205,7 @@ const CreateActivity = () => {
         endingHours: formData.endingHours,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
+        price: formData.price,
         status: "active",
         imageUrls: [],
       });
@@ -225,7 +228,7 @@ const CreateActivity = () => {
         imageUrls: imageUrls,
         "host.profilePicUrl": profilePicUrl || null,
       });
-
+      setLoading(false);
       return { docId: activityRef.id, activityId: activityId }; // Return both Firestore doc ID and custom activity ID
     } catch (error) {
       console.error("Error creating activity:", error);
@@ -236,7 +239,9 @@ const CreateActivity = () => {
     e.preventDefault();
     try {
       const { docId, activityId } = await createActivity(formData);
+
       toast.success(`Activity created successfully with ID: ${docId}`);
+      navigate(`/AdminLayout/activityManagement`);
       // Reset form or redirect
     } catch (error) {
       console.error("Form submission error:", error);
@@ -245,50 +250,37 @@ const CreateActivity = () => {
   };
 
   // Function to fetch a single activity
-  const getActivity = async (activityId) => {
-    try {
-      const docRef = doc(db, "activities", activityId);
-      const docSnap = await getDoc(docRef);
 
-      if (docSnap.exists()) {
-        return {
-          id: docSnap.id,
-          ...docSnap.data(),
-        };
-      } else {
-        throw new Error("Activity not found");
-      }
-    } catch (error) {
-      console.error("Error fetching activity:", error);
-      throw error;
-    }
+  const removeImage = (index) => {
+    const newImages = formData.images.filter((_, i) => i !== index);
+    const newPreviews = formData.imagesPreviews.filter((_, i) => i !== index);
+    setFormData({
+      ...formData,
+      images: newImages,
+      imagesPreviews: newPreviews,
+    });
   };
+  const addImages = (files) => {
+    const validImages = files.filter((file) => file.type.startsWith("image/"));
+    const newImagePreviews = validImages.map((image) =>
+      URL.createObjectURL(image)
+    );
 
+    // Update the formData with new images
+    setFormData((prevData) => ({
+      ...prevData,
+      images: [...prevData.images, ...validImages],
+      imagesPreviews: [...prevData.imagesPreviews, ...newImagePreviews],
+    }));
+  };
   // Function to fetch activities with filters
-  const getActivities = async (filters = {}) => {
-    try {
-      let q = collection(db, "activities");
-
-      // Add filters
-      if (filters.category) {
-        q = query(q, where("category", "==", filters.category));
-      }
-
-      if (filters.status) {
-        q = query(q, where("status", "==", filters.status));
-      }
-
-      const querySnapshot = await getDocs(q);
-      return querySnapshot.docs.map((doc) => ({
-        id: doc.id,
-        ...doc.data(),
-      }));
-    } catch (error) {
-      console.error("Error fetching activities:", error);
-      throw error;
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    if (files.length > 0) {
+      addImages(files); // Call the function to add images
     }
   };
-
   return (
     <div className="w-full mx-auto p-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -300,35 +292,61 @@ const CreateActivity = () => {
             {/* Images */}
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Images</label>
-              <div className="grid grid-cols-3 gap-4">
-                {formData.images.map((_, index) => (
-                  <div key={index} className="relative">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(index, e)}
-                      className="hidden"
-                      id={`image-${index}`}
+              <div
+                className="w-full aspect-video bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors mb-4"
+                onDragOver={(e) => e.preventDefault()} // Allow dragging over the div
+                onDrop={handleDrop}
+              >
+                {" "}
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                  id="image-upload"
+                  multiple
+                />
+                <label
+                  htmlFor="image-upload"
+                  className="w-full h-full flex flex-col items-center justify-center"
+                >
+                  {formData.imagesPreviews.length > 0 ? (
+                    <img
+                      src={
+                        formData.imagesPreviews[
+                          formData.imagesPreviews.length - 1
+                        ]
+                      }
+                      alt="Latest upload"
+                      className="w-full h-full object-cover rounded-lg"
                     />
-                    <label
-                      htmlFor={`image-${index}`}
-                      className="block w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                  ) : (
+                    <>
+                      <Camera className="w-12 h-12 text-gray-400 mb-2" />
+                      <p className="text-gray-500">
+                        Drag images here or click to upload
+                      </p>
+                    </>
+                  )}
+                </label>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {formData.images.map((image, index) => (
+                  <div
+                    key={index}
+                    className="bg-gray-100 rounded-full px-3 py-1 flex items-center"
+                  >
+                    <span className="text-sm mr-2">{image?.name}</span>
+                    <button
+                      onClick={() => removeImage(index)}
+                      className="text-red-500"
                     >
-                      {formData.imagesPreviews[index] ? (
-                        <img
-                          src={formData.imagesPreviews[index]}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <Camera className="w-8 h-8 text-gray-400" />
-                      )}
-                    </label>
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
-
             {/* Title */}
             <div className="mb-6">
               <label className="block text-sm font-medium mb-2">Title</label>
@@ -378,14 +396,12 @@ const CreateActivity = () => {
                     onChange={(e) => handleDetailChange(index, e.target.value)}
                     className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   />
-                  {index > 0 && (
-                    <button
-                      onClick={() => removeDetail(index)}
-                      className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
-                    >
-                      <X className="w-5 h-5" />
-                    </button>
-                  )}
+                  <button
+                    onClick={() => removeDetail(index)}
+                    className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+                  >
+                    <X className="w-5 h-5" />
+                  </button>
                 </div>
               ))}
             </div>
@@ -412,6 +428,20 @@ const CreateActivity = () => {
 
           {/* Right Column */}
           <div className="lg:col-span-1">
+            {/* Price */}
+            <div className="mb-6">
+              <label className="block text-sm font-medium mb-2">Price</label>
+              <input
+                type="number"
+                value={formData.price}
+                onChange={(e) =>
+                  setFormData({ ...formData, price: e.target.value })
+                }
+                className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                placeholder="Enter price"
+              />
+            </div>
+
             {/* Hashtags */}
             <div className="bg-white rounded-lg p-4 mb-6 shadow-sm">
               <div className="mb-4">
@@ -427,29 +457,28 @@ const CreateActivity = () => {
                   </button>
                 </div>
 
-                {formData.hashtags.map((hashtag, index) => (
-                  <div key={index} className="flex gap-2 mb-2">
-                    <input
-                      type="text"
-                      value={hashtag}
-                      onChange={(e) =>
-                        handleHashtagChange(index, e.target.value)
-                      }
-                      className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
-                      placeholder="#hashtag"
-                    />
-                    {index > 0 && (
+                <div className="grid grid-cols-2 gap-2">
+                  {formData.hashtags.map((hashtag, index) => (
+                    <div key={index} className="flex w-[90%] gap-2 mb-2">
+                      <input
+                        type="text"
+                        value={hashtag}
+                        onChange={(e) =>
+                          handleHashtagChange(index, e.target.value)
+                        }
+                        className="flex-1 px-4 py-2 w-full border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                        placeholder="#hashtag"
+                      />
                       <button
                         onClick={() => removeHashtag(index)}
                         className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
                       >
                         <X className="w-5 h-5" />
                       </button>
-                    )}
-                  </div>
-                ))}
+                    </div>
+                  ))}
+                </div>
               </div>
-
               {/* Category */}
               <div className="mb-4">
                 <label className="block text-sm font-medium mb-2">
@@ -624,10 +653,11 @@ const CreateActivity = () => {
           </div>
         </div>
         <button
-          className="bg-red-500 text-white px-4 py-2 rounded-lg"
+          className="bg-red-500 text-white px-4 py-2 rounded-lg disabled:bg-gray-400"
           onClick={handleSubmit}
+          disabled={loading}
         >
-          Create Activity
+          {loading ? "Creating......" : "Create Activity"}
         </button>
       </div>
     </div>

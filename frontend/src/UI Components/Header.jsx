@@ -92,17 +92,22 @@ const Header = () => {
           <div className="text-3xl">
             {currentUser ? (
               <div className="flex gap-x-7 items-center">
+                {currentUser.userType === "admin" && (
+                  <Link to={"/AdminDashboard"}>
+                    <PiUser />
+                  </Link>
+                )}
+                {currentUser.userType === "user" && (
+                  <Link to={"/UserDashboard"}>
+                    <PiUser />
+                  </Link>
+                )}
                 <button
                   className="bg-[#E55938] hover:bg-orange-700 py-2.5 px-6 rounded-lg custom-bold text-white text-[18px]"
-                  onClick={() => {
-                    handleLogout();
-                  }}
+                  onClick={handleLogout}
                 >
                   Logout
                 </button>
-                <Link to={"/login"}>
-                  <PiUser />
-                </Link>
               </div>
             ) : (
               <Link to={"/signup"}>

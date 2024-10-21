@@ -8,6 +8,7 @@ import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { collection, getDocs } from "firebase/firestore";
 import { db } from "../config/firebase";
+import useSliderSettings from "../admin/components/SliderSettings";
 
 const Homepage = () => {
   const [featuredActivities, setFeaturedActivities] = useState([]);
@@ -15,6 +16,7 @@ const Homepage = () => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
   }, []);
+  const settings23 = useSliderSettings(featuredActivities);
   const fetchFeaturedActivities = async () => {
     try {
       const featuredActivitiesRef = collection(db, "featuredActivities");
@@ -289,14 +291,27 @@ const Homepage = () => {
       </section>
       {/* FEATURED CARD */}
       <section className="h-full w-full mb-16">
-        <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+        <div className="h-full w-full justify-center items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
             Featured Activities
           </h2>
-          <div className="w-full pb-5 relative">
-            <Slider {...settings2} ref={sliderRef2}>
+          <div
+            className="pb-5 relative"
+            style={{
+              width: `${
+                featuredActivities.length === 2
+                  ? 50
+                  : featuredActivities.length === 3
+                  ? 60
+                  : featuredActivities.length >= 4
+                  ? 80
+                  : 50
+              }%`,
+            }}
+          >
+            <Slider {...settings23} ref={sliderRef2}>
               {featuredActivities.map((activity, index) => (
-                <div key={index} className="px-2">
+                <div key={index} className="px-1">
                   <FeaturedCard
                     title={activity.title}
                     duration={activity.duration || "Duration 2 hours"}

@@ -11,10 +11,16 @@ import { collection, getDocs, query, where } from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
+import SetBoundsComponent from "../admin/components/SetBoundsComponent";
+import useSliderSettings from "../admin/components/SliderSettings";
 const createCustomIcon = (number) => {
+  const mapMarkerIcon = `
+    <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
+      <path d="M12 11.5A2.5 2.5 0 019.5 9 2.5 2.5 0 0112 6.5 2.5 2.5 0 0114.5 9a2.5 2.5 0 01-2.5 2.5M12 2a7 7 0 00-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 00-7-7z" />
+    </svg>`;
   return L.divIcon({
     className: "custom-marker",
-    html: `<div class="marker-icon bg-white flex items-center justify-center shadow-lg font-bold rounded-full px-3  text-xl  ">${number}</div>`,
+    html: `<div class="marker-icon  flex items-center justify-center  font-bold rounded-full px-3 w-[3rem] h-[3rem]">${mapMarkerIcon}</div>`,
     iconSize: [30, 30],
     iconAnchor: [30, 30],
   });
@@ -26,6 +32,7 @@ const PostPage = () => {
   const [featuredActivities, setFeaturedActivities] = useState([]);
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
+  console.log("activityIdParam", activityIdParam);
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -43,7 +50,7 @@ const PostPage = () => {
       console.error("Error fetching featured activities:", error);
     }
   };
-  const [slidesToShow, setSlidesToShow] = useState(3);
+
   useEffect(() => {
     const fetchActivities = async () => {
       try {
@@ -94,6 +101,7 @@ const PostPage = () => {
 
     fetchActivities();
   }, [activityIdParam]);
+  const [slideToShow, setSlidesToShow] = useState(3);
   useEffect(() => {
     const updateSlidesToShow = () => {
       if (window.innerWidth < 600) {
@@ -134,6 +142,7 @@ const PostPage = () => {
     endingHours: "",
   });
   const [loading, setLoading] = useState(true);
+
   useEffect(() => {
     const fetchActivityData = async () => {
       try {
@@ -382,15 +391,18 @@ const PostPage = () => {
       },
     ],
   };
+
+  const slidesToShow = Math.min(4, featuredActivities.length);
+
   const settings2 = {
     dots: true,
     infinite: featuredActivities.length > 1,
     speed: 500,
-    slidesToShow: Math.min(4, featuredActivities.length),
+    slidesToShow: slidesToShow,
     slidesToScroll: 1,
     autoplay: featuredActivities.length > 1,
     autoplaySpeed: 3000,
-    centerMode: false, // Disabled centerMode to prevent extra spacing
+    centerMode: false,
     centerPadding: "0px",
     responsive: [
       {
@@ -398,8 +410,6 @@ const PostPage = () => {
         settings: {
           slidesToShow: Math.min(3, featuredActivities.length),
           slidesToScroll: 1,
-          centerMode: false,
-          centerPadding: "0px",
         },
       },
       {
@@ -407,8 +417,6 @@ const PostPage = () => {
         settings: {
           slidesToShow: Math.min(3, featuredActivities.length),
           slidesToScroll: 1,
-          centerMode: false,
-          centerPadding: "0px",
         },
       },
       {
@@ -416,8 +424,6 @@ const PostPage = () => {
         settings: {
           slidesToShow: Math.min(2, featuredActivities.length),
           slidesToScroll: 1,
-          centerMode: false,
-          centerPadding: "0px",
         },
       },
       {
@@ -425,38 +431,102 @@ const PostPage = () => {
         settings: {
           slidesToShow: 1,
           slidesToScroll: 1,
-          centerMode: false,
-          centerPadding: "0px",
         },
       },
     ],
   };
-  function getBounds(locations) {
-    const latitudes = locations.map((loc) => loc.lat);
-    const longitudes = locations.map((loc) => loc.lng);
-    const minLat = Math.min(...latitudes);
-    const maxLat = Math.max(...latitudes);
-    const minLng = Math.min(...longitudes);
-    const maxLng = Math.max(...longitudes);
-    return [
-      [minLat, minLng],
-      [maxLat, maxLng],
-    ];
-  }
 
-  function getCenterCoordinates(locations) {
-    if (locations.length === 0) {
-      return [33.684422, 73.047882]; // Default center coordinates
+  const settings23 = useSliderSettings(relatedActivities);
+  const getBounds = (locations) => {
+    if (!locations || locations.length === 0) return null;
+
+    const validLocations = locations.filter((loc) => loc.lat && loc.lng);
+    if (validLocations.length === 0) return null;
+
+    let minLat = validLocations[0].lat;
+    let maxLat = validLocations[0].lat;
+    let minLng = validLocations[0].lng;
+    let maxLng = validLocations[0].lng;
+
+    validLocations.forEach((loc) => {
+      minLat = Math.min(minLat, loc.lat);
+      maxLat = Math.max(maxLat, loc.lat);
+      minLng = Math.min(minLng, loc.lng);
+      maxLng = Math.max(maxLng, loc.lng);
+    });
+
+    return [
+      [minLat - 0.1, minLng - 0.1], // Add padding
+      [maxLat + 0.1, maxLng + 0.1], // Add padding
+    ];
+  };
+
+  const mapRef = useRef(null);
+
+  // Effect to fit bounds when locations change
+  useEffect(() => {
+    if (mapRef.current && locationMap.length > 0) {
+      const bounds = getBounds(locationMap);
+      if (bounds) {
+        mapRef.current.fitBounds(bounds, {
+          padding: [50, 50],
+          maxZoom: 15, // Prevent too much zoom on single location
+          duration: 1, // Animation duration in seconds
+        });
+      }
+    }
+  }, [locationMap]);
+
+  const getCenterCoordinates = (locations) => {
+    if (!locations || locations.length === 0) {
+      return [33.684422, 73.047882]; // Default center if no locations
     }
 
-    const latitudes = locations.map((loc) => loc.lat);
-    const longitudes = locations.map((loc) => loc.lng);
-    const avgLat =
-      latitudes.reduce((sum, lat) => sum + lat, 0) / latitudes.length;
-    const avgLng =
-      longitudes.reduce((sum, lng) => sum + lng, 0) / longitudes.length;
-    return [avgLat, avgLng];
-  }
+    const validLocations = locations.filter((loc) => loc.lat && loc.lng);
+    if (validLocations.length === 0) return [33.684422, 73.047882];
+
+    const totalLat = validLocations.reduce((sum, loc) => sum + loc.lat, 0);
+    const totalLng = validLocations.reduce((sum, loc) => sum + loc.lng, 0);
+    return [totalLat / validLocations.length, totalLng / validLocations.length];
+  };
+
+  const showNavigation = featuredActivities.length > slidesToShow;
+  const getContainerWidth = () => {
+    const totalItems = relatedActivities?.length || 0;
+    console.log("totalItems", totalItems);
+    switch (totalItems) {
+      case 1:
+        return "w-1/2"; // 50%
+      case 2:
+        return "w-[10%]"; // 50%
+      case 3:
+        return "w-3/5"; // 60%
+      case 4:
+      case 5:
+      case 6:
+        return "w-[100%]"; // 80%
+      default:
+        return "w-1/2"; // 50% as default
+    }
+  };
+  const getContainerWidth2 = () => {
+    const totalItems = featuredActivities?.length || 0;
+    console.log("totalItems", totalItems);
+    switch (totalItems) {
+      case 1:
+        return "w-1/2"; // 50%
+      case 2:
+        return "w-[50%]"; // 50%
+      case 3:
+        return "w-3/5"; // 60%
+      case 4:
+      case 5:
+      case 6:
+        return "w-[100%]"; // 80%
+      default:
+        return "w-1/2"; // 50% as default
+    }
+  };
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
@@ -541,31 +611,39 @@ const PostPage = () => {
               </ul>
             </article>
             <p className="md:text-xl  text-lg lg:text-2xl custom-semibold my-4">
-              Open In Google map
+              {formData.showGoogleMap && "Location"}
             </p>
             {formData.showGoogleMap && (
               <div className="100% md:h-[400px] h-[500px]">
                 <MapContainer
+                  ref={mapRef}
                   center={getCenterCoordinates(locationMap)}
                   zoom={12}
                   style={{ height: "100%", width: "100%" }}
                   className="z-10"
-                  bounds={
-                    locationMap.length > 0 ? getBounds(locationMap) : undefined
-                  }
-                  boundsOptions={{ padding: [50, 50] }}
                 >
                   <TileLayer
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                     attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
                   />
+
+                  {/* Add a component to handle bounds fitting */}
+                  <SetBoundsComponent
+                    locations={locationMap}
+                    getBounds={getBounds}
+                  />
+
                   {locationMap.map((location) => (
                     <Marker
                       key={location.id}
                       position={[location.lat, location.lng]}
                       icon={createCustomIcon(2)}
                     >
-                      <Popup>{location.name}</Popup>
+                      <Popup>
+                        <div className="p-2">
+                          <h3 className="font-bold">{location.name}</h3>
+                        </div>
+                      </Popup>
                     </Marker>
                   ))}
                 </MapContainer>
@@ -653,26 +731,8 @@ const PostPage = () => {
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities
             </h2>
-            <div
-              className="pb-5 relative"
-              style={{
-                width: `${
-                  featuredActivities.length === 2
-                    ? 50
-                    : featuredActivities.length === 3
-                    ? 60
-                    : featuredActivities.length >= 4
-                    ? 80
-                    : 50
-                }%`,
-              }}
-            >
-              <Slider
-                {...settings2}
-                ref={(slider) => {
-                  sliderRef = slider;
-                }}
-              >
+            <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
+              <Slider ref={sliderRef} {...settings23}>
                 {relatedActivities.map((activity, index) => (
                   <div key={index}>
                     <FeaturedCard
@@ -689,7 +749,7 @@ const PostPage = () => {
                   </div>
                 ))}
               </Slider>
-              {featuredActivities.length > slidesToShow && (
+              {showNavigation && (
                 <>
                   <button
                     className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
@@ -715,20 +775,7 @@ const PostPage = () => {
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Featured Activities
             </h2>
-            <div
-              className="pb-5 relative"
-              style={{
-                width: `${
-                  featuredActivities.length === 2
-                    ? 50
-                    : featuredActivities.length === 3
-                    ? 60
-                    : featuredActivities.length >= 4
-                    ? 80
-                    : 50
-                }%`,
-              }}
-            >
+            <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
               <Slider {...settings2} ref={sliderRef2}>
                 {featuredActivities.map((activity, index) => (
                   <div key={index} className="px-2">

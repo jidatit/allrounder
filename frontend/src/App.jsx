@@ -80,7 +80,10 @@ function App() {
                   path="/team-sport-category"
                   element={<TeamSportsCategory />}
                 />
-                <Route path="/post/:activityIdParam" element={<PostPage />} />
+                <Route
+                  path="/post/:activityIdParam/:featureActivityParam"
+                  element={<PostPage />}
+                />
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/blog/:id" element={<BlogPost />} />

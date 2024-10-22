@@ -1,15 +1,32 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { TbCalendarEvent } from "react-icons/tb";
 import { TiDocumentText } from "react-icons/ti";
 import { PiClipboardTextFill } from "react-icons/pi";
 import { useAuth } from "../../context/authContext";
+
 const AdminSideBar = ({ isSidebarExpanded }) => {
   const { handleLogout } = useAuth();
-  const [activeItem, setActiveItem] = useState("Activity Management");
+
+  // Retrieve active item from localStorage, defaulting to "Activity Management"
+  const [activeItem, setActiveItem] = useState(
+    localStorage.getItem("activeItem") || "Activity Management"
+  );
+
+  // Handle item click and store the active item in localStorage
   const handleItemClick = (item) => {
     setActiveItem(item);
+    localStorage.setItem("activeItem", item); // Save to localStorage
   };
+
+  useEffect(() => {
+    // Ensure the activeItem is updated from localStorage on mount
+    const storedActiveItem = localStorage.getItem("activeItem");
+    if (storedActiveItem) {
+      setActiveItem(storedActiveItem);
+    }
+  }, []);
+
   return (
     <div
       className={` z-50 h-full w-full overflow-hidden bg-white  ${
@@ -51,6 +68,7 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
               Activity Management
             </p>
           </Link>
+
           <Link
             to={"/AdminLayout/featuredActivity"}
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group ${
@@ -78,29 +96,7 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
               Featured Activities
             </p>
           </Link>
-          {/* <Link
-            to=""
-            className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group  ${
-              activeItem === "My Interests"
-                ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
-                : "hover:bg-[#E55938] rounded-md hover:text-white"
-            }`}
-            onClick={() => handleItemClick("My Interests")}
-          >
-            <TiDocumentText
-              size={35}
-              className={`text-black group-hover:text-white ${
-                activeItem === "My Interests" ? "text-white" : "text-black"
-              }`}
-            />
-            <p
-              className={`w-full p-2 smd:p-3 rounded-md text-[14px] smd:text-[17px] custom-semibold group-hover:text-white ${
-                activeItem === "My Interests" ? "text-white" : "text-black"
-              }`}
-            >
-              Blogs Management
-            </p>
-          </Link> */}
+
           <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 hover:text-white group ${

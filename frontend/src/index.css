@@ -95,3 +95,10 @@
 .slick-dots li {
   margin: 0 2px;
 }
+.custom-div-icon {
+  background: #2563eb;
+  border-radius: 50%;
+  color: white;
+  text-align: center;
+  line-height: 30px;
+}

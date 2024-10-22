@@ -4,7 +4,7 @@ const Navbar = () => {
   const { currentUser } = useAuth();
   return (
     <nav className="bg-white w-full ">
-      <div className="w-full px-4 sm:px-6 lg:px-8 ">
+      {/* <div className="w-full px-4 sm:px-6 lg:px-8 ">
         <div className="flex smd:flex-row flex-col justify-between smd:items-center w-full py-3 smd:py-0 px-3 smd:px-0">
           <div className="flex-shrink-0 flex items-center w-[30%]">
             <h1 className="text-2xl font-bold text-gray-800 custom-bold">
@@ -27,7 +27,7 @@ const Navbar = () => {
             </div>
           </div>
         </div>
-      </div>
+      </div> */}
     </nav>
   );
 };

@@ -403,11 +403,11 @@ const EditActivityComponent = () => {
           {/* Left Column */}
           <div className="lg:col-span-2">
             {/* Images */}
-            <div className="mb-6">
+            <div className="mb-6 ">
               <label className="block text-sm font-medium mb-2">Images</label>
               <div className="grid grid-cols-3 gap-4">
                 {formData.images.map((_, index) => (
-                  <div key={index} className="relative">
+                  <div key={index} className="relative w-[100%] h-[20vh] ">
                     <input
                       type="file"
                       accept="image/*"
@@ -417,7 +417,7 @@ const EditActivityComponent = () => {
                     />
                     <label
                       htmlFor={`image-${index}`}
-                      className="block w-full aspect-square bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
+                      className=" w-full aspect-square h-full bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
                     >
                       {formData.imagesPreviews[index] ? (
                         <img

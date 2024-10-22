@@ -93,7 +93,7 @@ const Header = () => {
             {currentUser ? (
               <div className="flex gap-x-7 items-center">
                 {currentUser.userType === "admin" && (
-                  <Link to={"/AdminDashboard"}>
+                  <Link to={"/AdminLayout/activityManagement"}>
                     <PiUser />
                   </Link>
                 )}

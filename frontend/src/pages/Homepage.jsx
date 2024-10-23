@@ -124,10 +124,15 @@ const Homepage = () => {
   ];
   let sliderRef = useRef(null);
   const next = () => {
-    sliderRef.slickNext();
+    if (sliderRef2.current) {
+      sliderRef2.current.slickNext();
+    }
   };
+
   const previous = () => {
-    sliderRef.slickPrev();
+    if (sliderRef2.current) {
+      sliderRef2.current.slickPrev();
+    }
   };
 
   const settings = {
@@ -238,6 +243,23 @@ const Homepage = () => {
       },
     ],
   };
+  const getContainerWidth2 = () => {
+    const totalItems = featuredActivities?.length || 0;
+
+    // Create classes for different screen sizes
+    const baseClasses = {
+      1: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full md:w-[85%] lg:w-[70%] xl:w-3/5", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full md:w-[90%] lg:w-3/4 xl:w-2/3", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full lg:w-[85%] xl:w-[80%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full lg:w-[90%] xl:w-[85%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full lg:w-[95%] xl:w-[90%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Default responsive widths
+    };
+
+    return baseClasses[totalItems] || baseClasses.default;
+  };
+
   return (
     <main>
       <section>
@@ -291,24 +313,11 @@ const Homepage = () => {
       </section>
       {/* FEATURED CARD */}
       <section className="h-full w-full mb-16">
-        <div className="h-full w-full justify-center items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+        <div className="h-full w-full justify-center items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 smd:mt-0 mt-10 lg:gap-5">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
             Featured Activities
           </h2>
-          <div
-            className="pb-5 relative"
-            style={{
-              width: `${
-                featuredActivities.length === 2
-                  ? 50
-                  : featuredActivities.length === 3
-                  ? 60
-                  : featuredActivities.length >= 4
-                  ? 80
-                  : 50
-              }%`,
-            }}
-          >
+          <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
             <Slider {...settings23} ref={sliderRef2}>
               {featuredActivities.map((activity, index) => (
                 <div key={index} className="px-1">
@@ -322,6 +331,7 @@ const Homepage = () => {
                     price={activity.price || 35.0}
                     imageUrl={activity.imageUrls?.[0]}
                     sponsored={activity.sponsored}
+                    activityId={activity.activityId}
                   />
                 </div>
               ))}

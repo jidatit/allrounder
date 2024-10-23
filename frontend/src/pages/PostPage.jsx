@@ -101,23 +101,7 @@ const PostPage = () => {
 
     fetchActivities();
   }, [activityIdParam]);
-  const [slideToShow, setSlidesToShow] = useState(3);
-  useEffect(() => {
-    const updateSlidesToShow = () => {
-      if (window.innerWidth < 600) {
-        setSlidesToShow(1);
-      } else if (window.innerWidth < 1024) {
-        setSlidesToShow(2);
-      } else {
-        setSlidesToShow(3);
-      }
-    };
 
-    updateSlidesToShow();
-    window.addEventListener("resize", updateSlidesToShow);
-
-    return () => window.removeEventListener("resize", updateSlidesToShow);
-  }, []);
   const [formData, setFormData] = useState({
     activityId: "",
     images: Array(3).fill(null),
@@ -343,14 +327,28 @@ const PostPage = () => {
 
   let sliderRef = useRef(null);
   let sliderRef2 = useRef(null);
-
-  const next = (sliderRef) => {
-    sliderRef.slickNext();
-  };
-  const previous = (sliderRef) => {
-    sliderRef.slickPrev();
+  const next2 = () => {
+    if (sliderRef.current) {
+      sliderRef.current.slickNext();
+    }
   };
 
+  const previous2 = () => {
+    if (sliderRef.current) {
+      sliderRef.current.slickPrev();
+    }
+  };
+  const next = () => {
+    if (sliderRef2.current) {
+      sliderRef2.current.slickNext();
+    }
+  };
+
+  const previous = () => {
+    if (sliderRef2.current) {
+      sliderRef2.current.slickPrev();
+    }
+  };
   const settings = {
     dots: true,
     infinite: true,
@@ -379,50 +377,6 @@ const PostPage = () => {
         breakpoint: 960,
         settings: {
           slidesToShow: 2,
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 696,
-        settings: {
-          slidesToShow: 1,
-          slidesToScroll: 1,
-        },
-      },
-    ],
-  };
-
-  const slidesToShow = Math.min(4, featuredActivities.length);
-
-  const settings2 = {
-    dots: true,
-    infinite: featuredActivities.length > 1,
-    speed: 500,
-    slidesToShow: slidesToShow,
-    slidesToScroll: 1,
-    autoplay: featuredActivities.length > 1,
-    autoplaySpeed: 3000,
-    centerMode: false,
-    centerPadding: "0px",
-    responsive: [
-      {
-        breakpoint: 1360,
-        settings: {
-          slidesToShow: Math.min(3, featuredActivities.length),
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 1024,
-        settings: {
-          slidesToShow: Math.min(3, featuredActivities.length),
-          slidesToScroll: 1,
-        },
-      },
-      {
-        breakpoint: 960,
-        settings: {
-          slidesToShow: Math.min(2, featuredActivities.length),
           slidesToScroll: 1,
         },
       },
@@ -489,8 +443,8 @@ const PostPage = () => {
     const totalLng = validLocations.reduce((sum, loc) => sum + loc.lng, 0);
     return [totalLat / validLocations.length, totalLng / validLocations.length];
   };
-
-  const showNavigation = featuredActivities.length > slidesToShow;
+  const [slideToShow, setSlidesToShow] = useState(3);
+  const showNavigation = featuredActivities.length > slideToShow;
   const getContainerWidth = () => {
     const totalItems = relatedActivities?.length || 0;
     console.log("totalItems", totalItems);
@@ -509,23 +463,81 @@ const PostPage = () => {
         return "w-1/2"; // 50% as default
     }
   };
+
+  const settings2 = {
+    dots: true,
+    infinite: featuredActivities.length > 1,
+    speed: 500,
+    slidesToShow: slideToShow,
+    slidesToScroll: 1,
+    autoplay: featuredActivities.length > 1,
+    autoplaySpeed: 3000,
+    centerMode: false,
+    centerPadding: "0px",
+    responsive: [
+      {
+        breakpoint: 1360,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 1024,
+        settings: {
+          slidesToShow: Math.min(3, featuredActivities.length),
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 960,
+        settings: {
+          slidesToShow: Math.min(2, featuredActivities.length),
+          slidesToScroll: 1,
+        },
+      },
+      {
+        breakpoint: 696,
+        settings: {
+          slidesToShow: 1,
+          slidesToScroll: 1,
+        },
+      },
+    ],
+  };
+
+  useEffect(() => {
+    const updateSlidesToShow = () => {
+      if (window.innerWidth < 800) {
+        setSlidesToShow(1);
+      } else if (window.innerWidth < 1024) {
+        setSlidesToShow(2);
+      } else {
+        setSlidesToShow(3);
+      }
+    };
+
+    updateSlidesToShow();
+    window.addEventListener("resize", updateSlidesToShow);
+
+    return () => window.removeEventListener("resize", updateSlidesToShow);
+  }, []);
+
   const getContainerWidth2 = () => {
     const totalItems = featuredActivities?.length || 0;
-    console.log("totalItems", totalItems);
-    switch (totalItems) {
-      case 1:
-        return "w-1/2"; // 50%
-      case 2:
-        return "w-[50%]"; // 50%
-      case 3:
-        return "w-3/5"; // 60%
-      case 4:
-      case 5:
-      case 6:
-        return "w-[100%]"; // 80%
-      default:
-        return "w-1/2"; // 50% as default
-    }
+
+    // Create classes for different screen sizes
+    const baseClasses = {
+      1: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full md:w-[85%] lg:w-[70%] xl:w-3/5", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full md:w-[90%] lg:w-3/4 xl:w-2/3", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full lg:w-[85%] xl:w-[80%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full lg:w-[90%] xl:w-[85%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full lg:w-[95%] xl:w-[90%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Default responsive widths
+    };
+
+    return baseClasses[totalItems] || baseClasses.default;
   };
   return (
     <main className="h-full w-full ">
@@ -731,7 +743,7 @@ const PostPage = () => {
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities
             </h2>
-            <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
+            <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
               <Slider ref={sliderRef} {...settings23}>
                 {relatedActivities.map((activity, index) => (
                   <div key={index}>
@@ -753,13 +765,13 @@ const PostPage = () => {
                 <>
                   <button
                     className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                    onClick={() => previous(sliderRef)}
+                    onClick={() => previous2()}
                   >
                     <FaChevronLeft />
                   </button>
                   <button
                     className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-                    onClick={() => next(sliderRef)}
+                    onClick={() => next2()}
                   >
                     <FaChevronRight />
                   </button>
@@ -776,7 +788,7 @@ const PostPage = () => {
               Featured Activities
             </h2>
             <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
-              <Slider {...settings2} ref={sliderRef2}>
+              <Slider {...settings23} ref={sliderRef2}>
                 {featuredActivities.map((activity, index) => (
                   <div key={index} className="px-2">
                     <FeaturedCard
@@ -793,7 +805,7 @@ const PostPage = () => {
                   </div>
                 ))}
               </Slider>
-              {featuredActivities.length > slidesToShow && (
+              {featuredActivities.length > slideToShow && (
                 <>
                   <button
                     className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"

@@ -177,7 +177,7 @@ const TeamSportsCategory = () => {
   let featureActivityParam = "simpleActivity";
   return (
     <main className="h-full w-screen ">
-      <section className="h-full w-full px-4 sm:px-8 pt-10 lg:px-16 mx-auto max-w-[1840px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+      <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5">
         <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl ">
             All Activities
@@ -195,12 +195,12 @@ const TeamSportsCategory = () => {
               <p className="text-sm">Filters</p>
             </button>
           </div>
-          <div className=" w-full flex mt-3 lg:pt-8 pt-4 gap-6 flex-col lg:flex-row ">
+          <div className=" w-full flex mt-3 lg:pt-8 pt-4 gap-y-6 flex-col lg:flex-row ">
             {/* Card Container */}
             {loading ? (
               <ActivitySkeletonLoader />
             ) : (
-              <div className=" w-[80%] h-[860px] p-4 overflow-auto scrollbar-custom">
+              <div className=" lg:w-[70%] xxl:w-[60%] h-[860px]  overflow-auto scrollbar-custom">
                 {(filteredActivities || activities).map((activity) => (
                   <BlogCard
                     key={activity.docId}
@@ -220,7 +220,7 @@ const TeamSportsCategory = () => {
                 ))}
               </div>
             )}
-            <div className=" lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] p-4">
+            <div className=" lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
               <ActivitiesMap
                 activities={filteredActivities || activities}
                 featureActivityParam={featureActivityParam}
@@ -304,102 +304,6 @@ const BlogCard = ({
   }, []);
 
   return (
-    // <Link
-    //   to={`/post/${activityIdParam}/${featureActivityParam}`}
-    //   className="flex flex-col items-start gap-5 justify-start p-3 lg:p-4 w-full"
-    // >
-    //   <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full">
-    //     <div className="flex p-4">
-    //       <div className="w-[40%] mr-4 h-[30vh]">
-    //         <img
-    //           src={url}
-    //           alt={name}
-    //           className="w-full h-full object-cover rounded-md"
-    //         />
-    //       </div>
-    //       <div className="w-2/3 flex pl-3 flex-col justify-between">
-    //         <div>
-    //           <div className="flex items-center justify-between w-full gap-2">
-    //             <h3 className="text-xl font-semibold mb-2">{name}</h3>
-    //             {featuredActivities.some(
-    //               (featured) => featured.activityId === activityIdParam
-    //             ) ? (
-    //               <button
-    //                 onClick={(e) => {
-    //                   e.preventDefault(); // Prevent navigation
-    //                   handleAddToFeature();
-    //                 }}
-    //                 className="flex items-center bg-[#E55938] text-white rounded-full px-4 py-2 hover:bg-[#dd4826]"
-    //               >
-    //                 <MdStarRate className="mr-1" />
-    //                 {featuredActivities.some(
-    //                   (featured) => featured.activityId === activityIdParam
-    //                 )
-    //                   ? "Featured Activity"
-    //                   : ""}
-    //               </button>
-    //             ) : (
-    //               ""
-    //             )}
-    //           </div>
-
-    //           <p className="text-gray-600 mb-2">{address}</p>
-    //           <p className="flex items-center text-gray-600">
-    //             <LuPhone className="mr-2" />
-    //             {contact}
-    //           </p>
-    //         </div>
-    //         <div className="flex justify-between items-center mt-4">
-    //           <button
-    //             onClick={(e) => {
-    //               e.preventDefault(); // Prevent navigation
-    //               deleteFeatured(activityIdParam);
-    //             }}
-    //             className="flex items-center bg-[#E55938] text-white rounded-full px-4 py-2 hover:bg-[#dd4826]"
-    //           >
-    //             <MdStarRate className="mr-1" />
-    //             {featuredActivities.some(
-    //               (featured) => featured.activityId === activityIdParam
-    //             )
-    //               ? "Remove from Featured"
-    //               : "Add to Feature"}
-    //           </button>
-
-    //           {currentUser?.userType === "admin" && (
-    //             <div className="flex items-center space-x-4 mr-2">
-    //               <Link
-    //                 to={
-    //                   featuredActivities.some(
-    //                     (featured) => featured.activityId === activityIdParam
-    //                   )
-    //                     ? `/AdminLayout/editActivity/${activityIdParam}/${(featureActivityParam =
-    //                         "featureActivity")}`
-    //                     : `/AdminLayout/editActivity/${activityIdParam}/${featureActivityParam} `
-    //                 }
-    //                 className="flex items-center text-black"
-    //                 onClick={(e) => e.stopPropagation()} // Prevent navigation to activity details
-    //               >
-    //                 <FaEdit className="mr-1" />
-    //                 Edit Activity
-    //               </Link>
-    //               <button
-    //                 onClick={(e) => {
-    //                   e.preventDefault(); // Prevent navigation
-    //                   onDelete(activityIdParam);
-    //                 }}
-    //                 className="flex items-center text-black hover:text-black"
-    //               >
-    //                 <MdDeleteOutline className="mr-1" />
-    //                 Delete
-    //               </button>
-    //             </div>
-    //           )}
-    //         </div>
-    //       </div>
-    //     </div>
-    //   </div>
-    // </Link>
-
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
       className="flex flex-col items-start gap-3 sssm:gap-5 justify-start p-2 sm:p-3 lg:p-4 w-full"
@@ -476,7 +380,7 @@ const BlogCard = ({
                         ? "featureActivity"
                         : featureActivityParam
                     }`}
-                    className="flex items-center text-black text-sm sssm:text-base w-auto justify-center ssm:justify-start"
+                    className="flex items-center text-black text-sm sssm:text-base w-full justify-center ssm:justify-start"
                     onClick={(e) => e.stopPropagation()}
                   >
                     <FaEdit className="mr-1" />

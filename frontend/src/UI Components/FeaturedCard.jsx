@@ -17,9 +17,15 @@ const FeaturedCard = ({
   price,
   imageUrl,
   sponsored,
+  activityId,
 }) => {
+  const featureActivityParam = "simpleActivity";
+  const activityIdParam = activityId;
   return (
-    <Link to={"/post/1"} className="block w-full">
+    <Link
+      to={`/post/${activityIdParam}/${featureActivityParam}`}
+      className="block w-full"
+    >
       <div className="mx-auto max-w-[270px] w-full rounded-lg shadow-lg overflow-hidden bg-white">
         <div className="relative">
           <img

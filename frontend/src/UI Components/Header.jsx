@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { GiHamburgerMenu } from "react-icons/gi";
 import { IoMdClose } from "react-icons/io";
-
 import { PiUser } from "react-icons/pi";
 import { Link, NavLink } from "react-router-dom";
 import { useAuth } from "../context/authContext";
@@ -152,28 +151,31 @@ const Header = () => {
             <div className="flex gap-3">
               <div className="text-3xl ">
                 {currentUser ? (
-                  <button
-                    className="bg-orange-600 p-3 rounded-lg custom-semibold"
-                    onClick={() => {
-                      handleLogout();
-                    }}
-                  >
-                    Logout
-                  </button>
+                  <div className="flex gap-x-7 items-center">
+                    {currentUser.userType === "admin" && (
+                      <Link to={"/AdminLayout/activityManagement"}>
+                        <PiUser />
+                      </Link>
+                    )}
+                    {currentUser.userType === "user" && (
+                      <Link to={"/UserDashboard"}>
+                        <PiUser />
+                      </Link>
+                    )}
+                    <button
+                      className="bg-[#E55938] hover:bg-orange-700 py-2.5 px-6 rounded-lg custom-bold text-white text-[18px]"
+                      onClick={handleLogout}
+                    >
+                      Logout
+                    </button>
+                  </div>
                 ) : (
-                  <Link
-                    ref={userRef}
-                    to={"/signup"}
-                    onClick={() => {
-                      handleMobileMenu();
-                      console.log("1");
-                    }}
-                  >
+                  <Link to={"/signup"}>
                     <PiUser />
                   </Link>
                 )}
               </div>
-              <div>
+              <div onClick={() => setIsMobileMenuOpen(false)}>
                 <IoMdClose />
               </div>
             </div>

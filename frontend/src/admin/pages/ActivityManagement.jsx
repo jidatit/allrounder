@@ -201,7 +201,7 @@ const BlogCard = ({
     };
 
     fetchFeatures();
-  }, [featuredActivities]);
+  }, []);
   const handleAddToFeature = async () => {
     try {
       // Check if the activity is already featured

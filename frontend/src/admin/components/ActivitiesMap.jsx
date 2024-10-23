@@ -4,6 +4,7 @@ import { OpenStreetMapProvider } from "leaflet-geosearch";
 import SetBoundsComponent from "./SetBoundsComponent";
 import { useNavigate } from "react-router-dom";
 import ContentLoader from "react-content-loader";
+import MapSkeletonLoader from "./MapSkeletonLoader";
 const ActivitiesMap = ({ activities, featureActivityParam }) => {
   const mapRef = useRef(null);
   const navigate = useNavigate();
@@ -118,60 +119,55 @@ const ActivitiesMap = ({ activities, featureActivityParam }) => {
     });
   };
 
-  if (isLoading) {
-    return (
-      <ContentLoader
-        speed={1}
-        width={700}
-        height={800}
-        viewBox="0 0 800 860"
-        backgroundColor="#d9d9d9"
-        foregroundColor="#ecebeb"
-      >
-        <rect x="-8" y="-11" rx="2" ry="2" width="700" height="800" />
-      </ContentLoader>
-    );
-  }
+  // if (isLoading) {
+  //   return (
+
+  //   );
+  // }
 
   return (
     <div className="h-full w-full relative">
-      <MapContainer
-        ref={mapRef}
-        center={mapCenter}
-        zoom={mapZoom}
-        className="h-full w-full"
-      >
-        <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-        />
+      {isLoading ? (
+        <MapSkeletonLoader />
+      ) : (
+        <MapContainer
+          ref={mapRef}
+          center={mapCenter}
+          zoom={mapZoom}
+          className="h-full w-full"
+        >
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          />
 
-        {locations.map((location, index) => (
-          <Marker
-            key={location.id}
-            position={[location.lat, location.lng]}
-            icon={createMarkerIcon(index)}
-            eventHandlers={{
-              click: () => handleActivityClick(location),
-            }}
-          >
-            <Popup>
-              <div className="text-sm">
-                <h3 className="font-bold">{location.title}</h3>
-                <p>{location.location}</p>
-                <button
-                  className="mt-2 text-blue-600 hover:text-blue-800"
-                  onClick={() => handleActivityClick(location)}
-                >
-                  View Details
-                </button>
-              </div>
-            </Popup>
-          </Marker>
-        ))}
+          {locations.map((location, index) => (
+            <Marker
+              key={location.id}
+              position={[location.lat, location.lng]}
+              icon={createMarkerIcon(index)}
+              eventHandlers={{
+                click: () => handleActivityClick(location),
+              }}
+            >
+              <Popup>
+                <div className="text-sm">
+                  <h3 className="font-bold">{location.title}</h3>
+                  <p>{location.location}</p>
+                  <button
+                    className="mt-2 text-blue-600 hover:text-blue-800"
+                    onClick={() => handleActivityClick(location)}
+                  >
+                    View Details
+                  </button>
+                </div>
+              </Popup>
+            </Marker>
+          ))}
 
-        {mapBounds && <SetBoundsComponent bounds={mapBounds} />}
-      </MapContainer>
+          {mapBounds && <SetBoundsComponent bounds={mapBounds} />}
+        </MapContainer>
+      )}
     </div>
   );
 };

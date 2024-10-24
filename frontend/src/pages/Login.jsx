@@ -53,7 +53,7 @@ const LoginPage = () => {
       let userData = await queryCollection("admins");
       if (userData) {
         setLoading(false); // Stop loading
-        navigate("/AdminLayout");
+        navigate("/AdminLayout/activityManagement");
       }
 
       userData = await queryCollection("users");

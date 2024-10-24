@@ -77,9 +77,10 @@ function App() {
                 />
                 <Route path="/blog" element={<Blogs />} />
                 <Route
-                  path="/team-sport-category"
+                  path="/allActivities/:name"
                   element={<TeamSportsCategory />}
                 />
+                <Route path="/allActivities" element={<TeamSportsCategory />} />
                 <Route
                   path="/post/:activityIdParam/:featureActivityParam"
                   element={<PostPage />}

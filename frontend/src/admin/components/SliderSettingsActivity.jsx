@@ -16,7 +16,7 @@ const useSliderSettingsActivity = (relatedActivities) => {
         {
           breakpoint: 1360,
           settings: {
-            slidesToShow: Math.min(2, relatedActivities.length),
+            slidesToShow: Math.min(3, relatedActivities.length),
             slidesToScroll: 1,
             centerMode: relatedActivities.length === 1,
             centerPadding: "0px",
@@ -25,7 +25,7 @@ const useSliderSettingsActivity = (relatedActivities) => {
         {
           breakpoint: 1024,
           settings: {
-            slidesToShow: Math.min(2, relatedActivities.length),
+            slidesToShow: Math.min(3, relatedActivities.length),
             slidesToScroll: 1,
             centerMode: relatedActivities.length === 1,
             centerPadding: "0px",

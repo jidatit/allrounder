@@ -44,14 +44,14 @@ const CreateActivity = () => {
   });
 
   const categories = [
-    "Sports",
+    "Team Sports",
+    "Dance",
+    "Martial Arts",
+    "Stem",
+    "Athletics",
     "Music",
-    "Art",
-    "Education",
-    "Technology",
-    "Food",
-    "Travel",
-    "Other",
+    "Arts",
+    "Social",
   ];
   const [loading, setLoading] = useState(false);
   const handleImageUpload = (e) => {
@@ -348,7 +348,7 @@ const CreateActivity = () => {
               </div>
             </div>
             {/* Title */}
-            <div className="mb-6">
+            <div className="mb-6 ">
               <label className="block text-sm font-medium mb-2">Title</label>
               <input
                 type="text"
@@ -382,7 +382,7 @@ const CreateActivity = () => {
                 </label>
                 <button
                   onClick={addDetail}
-                  className="mb-2 text-white bg-red-500 rounded-full w-6 h-6 flex items-center justify-center hover:bg-red-600"
+                  className="mb-2 text-white bg-red-500 rounded-full w-6 h-6 relative right-2 flex items-center justify-center hover:bg-red-600"
                 >
                   <Plus className="w-4 h-4" />
                 </button>
@@ -419,9 +419,6 @@ const CreateActivity = () => {
                   className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Enter location"
                 />
-                <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                  Search Location
-                </button>
               </div>
             </div>
           </div>

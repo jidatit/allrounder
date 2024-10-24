@@ -14,6 +14,8 @@ import { OpenStreetMapProvider } from "leaflet-geosearch";
 import SetBoundsComponent from "../admin/components/SetBoundsComponent";
 import useSliderSettings from "../admin/components/SliderSettings";
 import useSliderSettingsActivity from "../admin/components/SliderSettingsActivity";
+import MapModal from "../admin/components/MapModal";
+import ShareButton from "../admin/components/SharedButton";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -559,10 +561,7 @@ const PostPage = () => {
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
                 <IoStarOutline /> <p>im Interested</p>
               </div>
-              <div className="Lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
-                <IoShareOutline />
-                share
-              </div>
+              <ShareButton />
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
                 <div className="flex items-center">
                   {[...Array(5)].map((_, index) => (
@@ -696,14 +695,16 @@ const PostPage = () => {
                 </p>
               </div>
             </div>
-            <div className="pb-7 pt-2 px-9 w-full ">
+            <div className="pb-7 pt-2 px-9 w-full">
               <div className="flex flex-col gap-2">
-                <h5 className=" custom-medium text-lg">Location:</h5>
+                <h5 className="custom-medium text-lg">Location:</h5>
                 <p className="text-sm custom-light">{formData.location}</p>
               </div>
-              <button className="w-[110px] h-[33px]  md:w-[137px] my-4  bg-[#E55938] rounded-3xl text-xs md:text-sm   text-white custom-semibold flex items-center justify-center">
-                View on map
-              </button>
+              <MapModal
+                location={formData.location}
+                locationMap={locationMap}
+                createCustomIcon={createCustomIcon}
+              />
               <h5 className="my-4  mt-7 text-xl custom-semibold">
                 Spread the word
               </h5>
@@ -733,93 +734,106 @@ const PostPage = () => {
 
         <section className="h-full w-full mb-16 mt-10 ">
           <div className="h-full w-full items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
-            <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
-              Related Activities
-            </h2>
-            <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
-              <Slider ref={sliderRef} {...settings24}>
-                {relatedActivities.map((activity, index) => (
-                  <div key={index}>
-                    <FeaturedCard
-                      title={activity.title}
-                      duration={activity.duration || "Duration 2 hours"}
-                      date={activity.date || "2nd July – 2nd August"}
-                      ageRange={activity.ageRange || "6 – 12 Years"}
-                      reviews={activity.reviews || 584}
-                      rating={activity.rating || 4.5}
-                      price={activity.price || 35.0}
-                      imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
-                      sponsored={activity.sponsored}
-                    />
-                  </div>
-                ))}
-              </Slider>
-              {showNavigation && (
-                <>
-                  <button
-                    className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                    onClick={() => previous2()}
-                  >
-                    <FaChevronLeft />
-                  </button>
-                  <button
-                    className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-                    onClick={() => next2()}
-                  >
-                    <FaChevronRight />
-                  </button>
-                </>
-              )}
-            </div>
+            {relatedActivities?.length === 0 ? (
+              ""
+            ) : (
+              <>
+                <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
+                  Related Activities
+                </h2>
+                <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
+                  <Slider ref={sliderRef} {...settings24}>
+                    {relatedActivities.map((activity, index) => (
+                      <div key={index}>
+                        <FeaturedCard
+                          title={activity.title}
+                          duration={activity.duration || "Duration 2 hours"}
+                          date={activity.date || "2nd July – 2nd August"}
+                          ageRange={activity.ageRange || "6 – 12 Years"}
+                          reviews={activity.reviews || 584}
+                          rating={activity.rating || 4.5}
+                          price={activity.price || 35.0}
+                          imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
+                          sponsored={activity.sponsored}
+                        />
+                      </div>
+                    ))}
+                  </Slider>
+                  {showNavigation && (
+                    <>
+                      <button
+                        className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                        onClick={() => previous2()}
+                      >
+                        <FaChevronLeft />
+                      </button>
+                      <button
+                        className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
+                        onClick={() => next2()}
+                      >
+                        <FaChevronRight />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </section>
         {/* Featured Activities */}
 
         <section className="h-full w-full mb-16 mt-6">
           <div className="h-full w-full mx-auto justify-center items-center max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
-            <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
-              Featured Activities
-            </h2>
-            <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
-              <Slider {...settings23} ref={sliderRef2}>
-                {featuredActivities.map((activity, index) => (
-                  <div key={index} className="px-2">
-                    <FeaturedCard
-                      title={activity.title}
-                      duration={activity.duration || "Duration 2 hours"}
-                      date={activity.date || "2nd July – 2nd August"}
-                      ageRange={activity.ageRange || "6 – 12 Years"}
-                      reviews={activity.reviews || 584}
-                      rating={activity.rating || 4.5}
-                      price={activity.price || 35.0}
-                      imageUrl={activity.imageUrls?.[0]}
-                      sponsored={activity.sponsored}
-                    />
-                  </div>
-                ))}
-              </Slider>
-              {featuredActivities.length > slideToShow && (
-                <>
-                  <button
-                    className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                    onClick={previous}
-                  >
-                    <FaChevronLeft />
-                  </button>
-                  <button
-                    className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                    onClick={next}
-                  >
-                    <FaChevronRight />
-                  </button>
-                </>
-              )}
-            </div>
+            {featuredActivities?.length === 0 ? (
+              ""
+            ) : (
+              <>
+                <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
+                  Featured Activities
+                </h2>
+                <div
+                  className={`relative pb-5 mx-auto ${getContainerWidth2()}`}
+                >
+                  <Slider {...settings23} ref={sliderRef2}>
+                    {featuredActivities.map((activity, index) => (
+                      <div key={index} className="px-2">
+                        <FeaturedCard
+                          title={activity.title}
+                          duration={activity.duration || "Duration 2 hours"}
+                          date={activity.date || "2nd July – 2nd August"}
+                          ageRange={activity.ageRange || "6 – 12 Years"}
+                          reviews={activity.reviews || 584}
+                          rating={activity.rating || 4.5}
+                          price={activity.price || 35.0}
+                          imageUrl={activity.imageUrls?.[0]}
+                          sponsored={activity.sponsored}
+                        />
+                      </div>
+                    ))}
+                  </Slider>
+                  {featuredActivities.length > slideToShow && (
+                    <>
+                      <button
+                        className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                        onClick={previous}
+                      >
+                        <FaChevronLeft />
+                      </button>
+                      <button
+                        className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                        onClick={next}
+                      >
+                        <FaChevronRight />
+                      </button>
+                    </>
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </section>
 
-        {/* Reviews */}
-
+        {/* 
         <section className="h-full w-full  ">
           <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-5">
@@ -858,7 +872,7 @@ const PostPage = () => {
                 </button>
               </div>
             </div>
-            {/* Customer reviews */}
+ 
             <div className="">
               {CustomerReviews.map((review, index) => {
                 return (
@@ -907,7 +921,7 @@ const PostPage = () => {
               })}
             </div>
           </div>
-        </section>
+        </section> */}
       </section>
     </main>
   );

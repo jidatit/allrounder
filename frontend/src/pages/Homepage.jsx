@@ -44,7 +44,7 @@ const Homepage = () => {
       url: "/kids-martial-arts-class_1237301-108760.png",
     },
     {
-      title: "STEM",
+      title: "Stem",
       url: "/elementary-school-students-sitting-table-group-building-space-rocket-generative-ai_1259709-116255.png",
     },
     {
@@ -305,62 +305,72 @@ const Homepage = () => {
             Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
           </p>
           <div className="flex gap-3 flex-wrap w-full  content-start  justify-between">
-            {CategoryCards.map((card) => {
-              return <CategoryCard name={card.title} url={card.url} />;
+            {CategoryCards.map((card, index) => {
+              return (
+                <CategoryCard key={index} name={card.title} url={card.url} />
+              );
             })}
           </div>
         </div>
       </section>
       {/* FEATURED CARD */}
-      <section className="h-full w-full mb-16">
+      <section className="h-full w-full mb-16 mt-10">
         <div className="h-full w-full justify-center items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
-          <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
-            Featured Activities
-          </h2>
-          <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
-            <Slider {...settings23} ref={sliderRef2}>
-              {featuredActivities.map((activity, index) => (
-                <div key={index} className="px-1">
-                  <FeaturedCard
-                    title={activity.title}
-                    duration={activity.duration || "Duration 2 hours"}
-                    date={activity.date || "2nd July – 2nd August"}
-                    ageRange={activity.ageRange || "6 – 12 Years"}
-                    reviews={activity.reviews || 584}
-                    rating={activity.rating || 4.5}
-                    price={activity.price || 35.0}
-                    imageUrl={activity.imageUrls?.[0]}
-                    sponsored={activity.sponsored}
-                    activityId={activity.activityId}
-                  />
-                </div>
-              ))}
-            </Slider>
-            {featuredActivities.length > slidesToShow && (
-              <>
-                <button
-                  className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                  onClick={previous}
+          {featuredActivities?.length === 0 ? (
+            <div className="w-full h-full flex items-center justify-center">
+              <p className="text-2xl">No Featured activities</p>
+            </div>
+          ) : (
+            <>
+              <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
+                Featured Activities
+              </h2>
+              <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
+                <Slider {...settings23} ref={sliderRef2}>
+                  {featuredActivities.map((activity, index) => (
+                    <div key={index} className="px-1">
+                      <FeaturedCard
+                        title={activity.title}
+                        duration={activity.duration || "Duration 2 hours"}
+                        date={activity.date || "2nd July – 2nd August"}
+                        ageRange={activity.ageRange || "6 – 12 Years"}
+                        reviews={activity.reviews || 584}
+                        rating={activity.rating || 4.5}
+                        price={activity.price || 35.0}
+                        imageUrl={activity.imageUrls?.[0]}
+                        sponsored={activity.sponsored}
+                        activityId={activity.activityId}
+                      />
+                    </div>
+                  ))}
+                </Slider>
+                {featuredActivities.length > slidesToShow && (
+                  <>
+                    <button
+                      className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={previous}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <button
+                      className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={next}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </>
+                )}
+              </div>
+              <div className="flex item justify-center mt-4">
+                <Link
+                  to={`/allActivities`}
+                  className=" w-[110px] h-[33px]  md:w-[137px]  lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center"
                 >
-                  <FaChevronLeft />
-                </button>
-                <button
-                  className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                  onClick={next}
-                >
-                  <FaChevronRight />
-                </button>
-              </>
-            )}
-          </div>
-          <div className="flex item justify-center mt-4">
-            <Link
-              to={"team-sport-category"}
-              className=" w-[110px] h-[33px]  md:w-[137px]  lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center"
-            >
-              View More
-            </Link>
-          </div>
+                  View More
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
       {/* EXPLORE PROGRAM */}

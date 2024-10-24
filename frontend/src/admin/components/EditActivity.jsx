@@ -5,6 +5,7 @@ import { db, storage } from "../../config/firebase";
 import {
   addDoc,
   collection,
+  deleteField,
   doc,
   getDoc,
   getDocs,
@@ -16,6 +17,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useParams } from "react-router-dom";
+import { ActivityImages, ProfilePicture } from "./ImageMnagment";
 
 const EditActivityComponent = () => {
   const { activityIdParam, featureActivityParam } = useParams();
@@ -233,36 +235,61 @@ const EditActivityComponent = () => {
     try {
       const activityRef = doc(db, "activities", formData.documentId);
 
-      // Fetch current image URLs
+      // Fetch current data
       const docSnapshot = await getDoc(activityRef);
-      const currentImageUrls = docSnapshot.data().imageUrls || [];
+      const currentData = docSnapshot.data();
+      const currentImageUrls = currentData.imageUrls || [];
 
-      // Create a new array for updated image URLs, starting with the current URLs
-      const updatedImageUrls = [...currentImageUrls];
+      // Create a new array for updated image URLs
+      let updatedImageUrls = [];
 
       // Loop through the images in the formData
       for (let i = 0; i < formData.images.length; i++) {
         if (formData.images[i] instanceof File) {
-          // If there's a new image (File object), upload it and update the corresponding URL
+          // If there's a new image, upload it
           const newImageUrls = await uploadImages(
             [formData.images[i]],
             formData.activityId
           );
           if (newImageUrls.length > 0) {
-            updatedImageUrls[i] = newImageUrls[0]; // Replace the URL at the current index
+            updatedImageUrls[i] = newImageUrls[0];
           }
         } else if (typeof formData.images[i] === "string") {
-          // If it's a string (existing URL), keep it as is
+          // If it's a string (existing URL), keep it
           updatedImageUrls[i] = formData.images[i];
         }
-        // If formData.images[i] is undefined or null, we don't change updatedImageUrls[i],
-        // effectively keeping the existing URL (if any) at that index
       }
 
-      // Ensure we don't have undefined elements in our array
-      const finalImageUrls = updatedImageUrls.filter(
-        (url) => url !== undefined
-      );
+      // Remove any undefined/null values
+      updatedImageUrls = updatedImageUrls.filter((url) => url);
+
+      // Prepare the host object, excluding the File object
+      const hostUpdateObject = {
+        ...formData.host,
+        phone: formData.host.phone,
+        email: formData.host.email,
+        about: formData.host.about,
+        website: formData.host.website,
+      };
+
+      // Remove the profilePic File object
+      delete hostUpdateObject.profilePic;
+
+      // Handle profile picture URL
+      if (formData.host.profilePic instanceof File) {
+        // Upload new profile picture and get URL
+        const profilePicUrl = await uploadImages(
+          [formData.host.profilePic],
+          formData.activityId
+        );
+        if (profilePicUrl.length > 0) {
+          hostUpdateObject.profilePicUrl = profilePicUrl[0];
+        }
+      } else if (formData.host.profilePicUrl === null) {
+        hostUpdateObject.profilePicUrl = deleteField();
+      } else if (currentData.host?.profilePicUrl) {
+        hostUpdateObject.profilePicUrl = currentData.host.profilePicUrl;
+      }
 
       // Prepare the update object with all fields
       const updateObject = {
@@ -277,29 +304,12 @@ const EditActivityComponent = () => {
         showGoogleMap: formData.showGoogleMap,
         startingHours: formData.startingHours,
         endingHours: formData.endingHours,
-        imageUrls: finalImageUrls,
-        host: {
-          name: formData.host.name,
-          phone: formData.host.phone,
-          email: formData.host.email,
-          about: formData.host.about,
-          website: formData.host.website,
-        },
+        imageUrls: updatedImageUrls,
+        host: hostUpdateObject,
         updatedAt: serverTimestamp(),
       };
 
-      // If there's a new profile picture, upload it and add the URL to the update object
-      if (formData.host.profilePic instanceof File) {
-        const profilePicUrl = await uploadImages(
-          [formData.host.profilePic],
-          formData.activityId
-        );
-        if (profilePicUrl.length > 0) {
-          updateObject.host.profilePicUrl = profilePicUrl[0];
-        }
-      }
-
-      // Update the document with all fields
+      // Update the document
       await updateDoc(activityRef, updateObject);
 
       return formData.activityId;
@@ -403,39 +413,14 @@ const EditActivityComponent = () => {
           {/* Left Column */}
           <div className="lg:col-span-2">
             {/* Images */}
-            <div className="mb-6 ">
-              <label className="block text-sm font-medium mb-2">Images</label>
-              <div className="grid grid-cols-3 gap-4">
-                {formData.images.map((_, index) => (
-                  <div key={index} className="relative w-[100%] h-[20vh] ">
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={(e) => handleImageUpload(index, e)}
-                      className="hidden"
-                      id={`image-${index}`}
-                    />
-                    <label
-                      htmlFor={`image-${index}`}
-                      className=" w-full aspect-square h-full bg-gray-100 rounded-lg flex items-center justify-center cursor-pointer hover:bg-gray-200 transition-colors"
-                    >
-                      {formData.imagesPreviews[index] ? (
-                        <img
-                          src={formData.imagesPreviews[index]}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-full object-cover rounded-lg"
-                        />
-                      ) : (
-                        <Camera className="w-8 h-8 text-gray-400" />
-                      )}
-                    </label>
-                  </div>
-                ))}
-              </div>
-            </div>
+            <ActivityImages
+              formData={formData}
+              setFormData={setFormData}
+              handleImageUpload={handleImageUpload}
+            />
 
             {/* Title */}
-            <div className="mb-6">
+            <div className="mb-6 mt-4">
               <label className="block text-sm font-medium mb-2">Title</label>
               <input
                 type="text"
@@ -506,9 +491,6 @@ const EditActivityComponent = () => {
                   className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
                   placeholder="Enter location"
                 />
-                <button className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors">
-                  Search Location
-                </button>
               </div>
             </div>
           </div>
@@ -628,33 +610,11 @@ const EditActivityComponent = () => {
               </div>
 
               <div className="space-y-4">
-                <div className="relative w-[70%]">
-                  <input
-                    type="file"
-                    accept="image/*"
-                    onChange={handleProfilePicUpload}
-                    className="hidden w-full flex flex-col gap-y-4"
-                    id="profile-pic"
-                  />
-
-                  <label
-                    htmlFor="profile-pic"
-                    className="block w-full h-32 bg-gray-100 rounded-lg overflow-hidden cursor-pointer"
-                  >
-                    {formData.host.profilePicPreview ? (
-                      <img
-                        src={formData.host.profilePicPreview}
-                        alt="Profile"
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex flex-col gap-y-3 items-center justify-center text-gray-400">
-                        <Camera className="w-8 h-8 text-gray-400" />
-                        Add Profile Pic
-                      </div>
-                    )}
-                  </label>
-                </div>
+                <ProfilePicture
+                  formData={formData}
+                  setFormData={setFormData}
+                  handleProfilePicUpload={handleProfilePicUpload}
+                />
                 <input
                   type="text"
                   placeholder="Host name"

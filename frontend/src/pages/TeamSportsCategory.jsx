@@ -5,7 +5,7 @@ import { LuPhone } from "react-icons/lu";
 import { MapContainer, TileLayer, Marker, Popup } from "react-leaflet";
 import { GeoSearchControl, OpenStreetMapProvider } from "leaflet-geosearch";
 import L from "leaflet";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { MdDeleteOutline, MdStarRate } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import {
@@ -40,60 +40,104 @@ const TeamSportsCategory = () => {
     { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
   ];
   const [activities, setActivities] = useState([]);
+  const { name } = useParams(); // Get category from URL params
   const [loading, setLoading] = useState(true);
   const [locationMap, setLocationMap] = useState([]);
   const navigate = useNavigate();
+  // Fetch all activities initially
+  const updateMapLocations = async (activitiesToMap) => {
+    const provider = new OpenStreetMapProvider();
+    const locationPromises = activitiesToMap.map(async (activity) => {
+      const results = await provider.search({ query: activity.location });
+      return {
+        id: activity.activityId,
+        name: activity.location,
+        lat: results[0]?.y,
+        lng: results[0]?.x,
+      };
+    });
+
+    const newLocations = await Promise.all(locationPromises);
+    setLocationMap(newLocations);
+  };
   useEffect(() => {
-    const fetchActivities = async () => {
+    const fetchAllActivities = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "activities"));
+        setLoading(true);
+        const activitiesRef = collection(db, "activities");
+        const querySnapshot = await getDocs(activitiesRef);
         const activitiesData = querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
         }));
         setActivities(activitiesData);
+
+        // Apply initial filtering based on URL param
+        const initialFiltered = name
+          ? activitiesData.filter((activity) => activity.category === name)
+          : activitiesData;
+
+        setFilteredActivities(initialFiltered);
+
+        // Update map locations
+        await updateMapLocations(initialFiltered);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
+        toast.error("Error fetching activities");
         setLoading(false);
       }
     };
 
-    fetchActivities();
+    fetchAllActivities();
   }, []);
+  // Single useEffect to fetch all activities
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        const querySnapshot = await getDocs(collection(db, "activities"));
+        setLoading(true);
+        // Always fetch all activities
+        const activitiesRef = collection(db, "activities");
+        const querySnapshot = await getDocs(activitiesRef);
         const activitiesData = querySnapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
         }));
+
         setActivities(activitiesData);
 
-        // Fetch the location coordinates using geocoding
-        const locationss = await Promise.all(
-          activitiesData.map(async (activity) => {
-            const provider = new OpenStreetMapProvider();
-            const results = await provider.search({ query: activity.location });
-            return {
-              id: activity.activityId,
-              name: activity.location,
-              lat: results[0]?.y,
-              lng: results[0]?.x,
-            };
-          })
-        );
-        setLocationMap(locationss);
+        // Initially filter based on URL param
+        const initialFiltered = name
+          ? activitiesData.filter((activity) => activity.category === name)
+          : activitiesData;
+
+        setFilteredActivities(initialFiltered);
+
+        // Update map locations
+        const provider = new OpenStreetMapProvider();
+        const locationPromises = initialFiltered.map(async (activity) => {
+          const results = await provider.search({ query: activity.location });
+          return {
+            id: activity.activityId,
+            name: activity.location,
+            lat: results[0]?.y,
+            lng: results[0]?.x,
+          };
+        });
+
+        const locations = await Promise.all(locationPromises);
+        setLocationMap(locations);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
+        toast.error("Error fetching activities");
         setLoading(false);
       }
     };
 
     fetchActivities();
-  }, []);
+  }, [name]); // Only depend on name parameter
+
   const deleteFeatured = async (activityId) => {
     try {
       // Create a query to find the document with matching activityId
@@ -159,71 +203,108 @@ const TeamSportsCategory = () => {
     }
   };
   const [filteredActivities, setFilteredActivities] = useState(activities);
-  useEffect(() => {
-    setFilteredActivities(activities);
-  }, [activities]);
-  const handleFilterChange = (selectedCategories) => {
+  // useEffect(() => {
+  //   setFilteredActivities(activities);
+  // }, [activities]);
+
+  const handleFilterChange = async (selectedCategories) => {
     setLoading(true);
-    if (selectedCategories.length === 0) {
-      setFilteredActivities(activities);
-    } else {
-      const filtered = activities.filter((activity) =>
-        selectedCategories.includes(activity.category)
-      );
+    try {
+      let filtered;
+
+      // Include URL param category in filtering if it exists
+      const categoriesToFilter = name
+        ? [...new Set([name, ...selectedCategories])] // Remove duplicates
+        : selectedCategories;
+
+      if (categoriesToFilter.length === 0) {
+        // If no categories selected and no URL param, show all
+        filtered = activities;
+      } else {
+        // Filter by all selected categories including URL param
+        filtered = activities.filter((activity) =>
+          categoriesToFilter.includes(activity.category)
+        );
+      }
+
       setFilteredActivities(filtered);
+
+      // Update map
+      const provider = new OpenStreetMapProvider();
+      const locationPromises = filtered.map(async (activity) => {
+        const results = await provider.search({ query: activity.location });
+        return {
+          id: activity.activityId,
+          name: activity.location,
+          lat: results[0]?.y,
+          lng: results[0]?.x,
+        };
+      });
+
+      const newLocations = await Promise.all(locationPromises);
+      setLocationMap(newLocations);
+    } catch (error) {
+      console.error("Error updating filters:", error);
+      toast.error("Error updating filters");
     }
     setLoading(false);
   };
   let featureActivityParam = "simpleActivity";
   return (
-    <main className="h-full w-screen ">
+    <main className="h-full w-screen">
       <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5">
         <div className="w-full">
-          <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl ">
-            All Activities
+          <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl">
+            {name ? `${name} Activities` : "All Activities"}
           </h2>
-          {/* filter buttons */}
+
           <div className="flex gap-3 custom-medium mt-3 lg:mt-8">
-            <button className="bg-[#EBEBEB] flex items-center justify-center p-2 px-4  rounded-full text-xl gap-1">
-              <CategoryFilterDropdown
-                activities={activities}
-                onFilterChange={handleFilterChange}
-              />
-            </button>
-            <button className="bg-[#EBEBEB] flex items-center justify-center lg:p-2 p-1 px-6 lg:px-8  rounded-full text-sm lg:text-xl gap-1">
+            <CategoryFilterDropdown
+              activities={activities}
+              onFilterChange={handleFilterChange}
+              initialCategory={name}
+            />
+            <button className="bg-[#EBEBEB] flex items-center justify-center lg:p-2 p-1 px-6 lg:px-8 rounded-full text-sm lg:text-xl gap-1">
               <HiOutlineAdjustmentsHorizontal />
               <p className="text-sm">Filters</p>
             </button>
           </div>
-          <div className=" w-full flex mt-3 lg:pt-8 pt-4 gap-y-6 flex-col lg:flex-row ">
-            {/* Card Container */}
+
+          <div className="w-full flex mt-3 lg:pt-8 pt-4 gap-y-6 flex-col lg:flex-row">
             {loading ? (
               <ActivitySkeletonLoader />
             ) : (
-              <div className=" lg:w-[70%] xxl:w-[60%] h-[860px]  overflow-auto scrollbar-custom">
-                {(filteredActivities || activities).map((activity) => (
-                  <BlogCard
-                    key={activity.docId}
-                    activityIdParam={activity.activityId}
-                    docId={activity.docId}
-                    name={activity.title}
-                    address={activity.location}
-                    contact={activity.host?.phone || "N/A"}
-                    url={
-                      activity.imageUrls?.[0] ||
-                      "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
-                    }
-                    activityData={activity}
-                    onDelete={handleDelete}
-                    deleteFeatured={deleteFeatured}
-                  />
-                ))}
+              <div className="lg:w-[70%] xxl:w-[60%] h-[860px] overflow-auto scrollbar-custom">
+                {filteredActivities.length === 0 ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-2xl">No activities found</p>
+                  </div>
+                ) : (
+                  filteredActivities.map((activity) => (
+                    <BlogCard
+                      key={activity.docId}
+                      activityIdParam={activity.activityId}
+                      docId={activity.docId}
+                      name={activity.title}
+                      address={activity.location}
+                      contact={activity.host?.phone || "N/A"}
+                      url={
+                        activity.imageUrls?.[0] ||
+                        "/Sports-banners/sports-teacher-with-her-students_23-2149070768.png"
+                      }
+                      activityData={activity}
+                      onDelete={handleDelete}
+                      deleteFeatured={deleteFeatured}
+                    />
+                  ))
+                )}
               </div>
             )}
-            <div className=" lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
+            <div className="lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
               <ActivitiesMap
-                activities={filteredActivities || activities}
-                featureActivityParam={featureActivityParam}
+                activities={filteredActivities}
+                locations={locationMap}
+                featureActivityParam="simpleActivity"
               />
             </div>
           </div>

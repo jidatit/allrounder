@@ -13,6 +13,7 @@ import ImageSlider from "../admin/components/ImageSlider";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import SetBoundsComponent from "../admin/components/SetBoundsComponent";
 import useSliderSettings from "../admin/components/SliderSettings";
+import useSliderSettingsActivity from "../admin/components/SliderSettingsActivity";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -390,7 +391,8 @@ const PostPage = () => {
     ],
   };
 
-  const settings23 = useSliderSettings(relatedActivities);
+  const settings23 = useSliderSettings(featuredActivities);
+  const settings24 = useSliderSettingsActivity(relatedActivities);
   const getBounds = (locations) => {
     if (!locations || locations.length === 0) return null;
 
@@ -444,25 +446,7 @@ const PostPage = () => {
     return [totalLat / validLocations.length, totalLng / validLocations.length];
   };
   const [slideToShow, setSlidesToShow] = useState(3);
-  const showNavigation = featuredActivities.length > slideToShow;
-  const getContainerWidth = () => {
-    const totalItems = relatedActivities?.length || 0;
-    console.log("totalItems", totalItems);
-    switch (totalItems) {
-      case 1:
-        return "w-1/2"; // 50%
-      case 2:
-        return "w-[10%]"; // 50%
-      case 3:
-        return "w-3/5"; // 60%
-      case 4:
-      case 5:
-      case 6:
-        return "w-[100%]"; // 80%
-      default:
-        return "w-1/2"; // 50% as default
-    }
-  };
+  const showNavigation = relatedActivities.length > slideToShow;
 
   const settings2 = {
     dots: true,
@@ -528,12 +512,28 @@ const PostPage = () => {
 
     // Create classes for different screen sizes
     const baseClasses = {
-      1: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full md:w-[85%] lg:w-[70%] xl:w-3/5", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full md:w-[90%] lg:w-3/4 xl:w-2/3", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full lg:w-[85%] xl:w-[80%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full lg:w-[90%] xl:w-[85%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full lg:w-[95%] xl:w-[90%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full md:w-[85%] lg:w-[70%] xl:w-[60%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full md:w-[100%] lg:w-[100%] xl:w-[90%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Default responsive widths
+    };
+
+    return baseClasses[totalItems] || baseClasses.default;
+  };
+  const getContainerWidth = () => {
+    const totalItems = relatedActivities?.length || 0;
+    console.log("totalItems", totalItems);
+    // Create classes for different screen sizes
+    const baseClasses = {
+      1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full md:w-[85%] lg:w-[70%] xl:w-[60%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full md:w-[100%] lg:w-[100%] xl:w-[90%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
       default: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Default responsive widths
     };
 
@@ -694,20 +694,13 @@ const PostPage = () => {
                   </span>
                   {formData.host.website}
                 </p>
-                <div className="flex items-center gap-2">
-                  <h5 className=" custom-medium text-lg">Location:</h5>
-                  <p className="text-sm custom-light">{formData.location}</p>
-                </div>
               </div>
             </div>
             <div className="pb-7 pt-2 px-9 w-full ">
-              <h5 className="mb-4  text-xl custom-semibold">
-                {formData.location}
-              </h5>
-              <p className="text-sm custom-light">
-                The Entertainer Toy Shop - PWD Islamabad (Plot 1, Block-A,
-                Street No. 5, Sector D, PWD Society), Islamabad, Pakistan
-              </p>
+              <div className="flex flex-col gap-2">
+                <h5 className=" custom-medium text-lg">Location:</h5>
+                <p className="text-sm custom-light">{formData.location}</p>
+              </div>
               <button className="w-[110px] h-[33px]  md:w-[137px] my-4  bg-[#E55938] rounded-3xl text-xs md:text-sm   text-white custom-semibold flex items-center justify-center">
                 View on map
               </button>
@@ -743,8 +736,8 @@ const PostPage = () => {
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Related Activities
             </h2>
-            <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
-              <Slider ref={sliderRef} {...settings23}>
+            <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
+              <Slider ref={sliderRef} {...settings24}>
                 {relatedActivities.map((activity, index) => (
                   <div key={index}>
                     <FeaturedCard
@@ -782,7 +775,7 @@ const PostPage = () => {
         </section>
         {/* Featured Activities */}
 
-        <section className="h-full w-full mb-16">
+        <section className="h-full w-full mb-16 mt-6">
           <div className="h-full w-full mx-auto justify-center items-center max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
               Featured Activities

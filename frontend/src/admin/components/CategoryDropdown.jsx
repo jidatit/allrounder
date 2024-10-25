@@ -24,7 +24,9 @@ const CategoryFilterDropdown = ({
   // Initialize with URL param category
   useEffect(() => {
     if (initialCategory) {
-      setSelectedCategories([]); // Reset when URL changes
+      setSelectedCategories([initialCategory]);
+    } else {
+      setSelectedCategories([]);
     }
   }, [initialCategory]);
 
@@ -32,11 +34,13 @@ const CategoryFilterDropdown = ({
     setSelectedCategories((prev) => {
       let newCategories;
       if (prev.includes(category)) {
+        // Remove the category even if it's the initial category
         newCategories = prev.filter((c) => c !== category);
       } else {
         newCategories = [...prev, category];
       }
-      onFilterChange(newCategories); // Pass only dropdown selections
+      // Call onFilterChange with the new categories
+      onFilterChange(newCategories);
       return newCategories;
     });
   };
@@ -50,12 +54,10 @@ const CategoryFilterDropdown = ({
         <CgMenuLeft />
         <p className="text-sm">
           {selectedCategories.length === 0
-            ? initialCategory || "Categories"
+            ? "All Categories"
             : selectedCategories.length === 1
             ? selectedCategories[0]
-            : `${
-                selectedCategories.length + (initialCategory ? 1 : 0)
-              } Selected`}
+            : `${selectedCategories.length} Selected`}
         </p>
       </button>
 
@@ -68,8 +70,7 @@ const CategoryFilterDropdown = ({
               onClick={() => toggleCategory(category)}
             >
               <div className="w-5 h-5 border rounded mr-3 flex items-center justify-center">
-                {(selectedCategories.includes(category) ||
-                  category === initialCategory) && (
+                {selectedCategories.includes(category) && (
                   <Check className="w-4 h-4 text-blue-600" />
                 )}
               </div>

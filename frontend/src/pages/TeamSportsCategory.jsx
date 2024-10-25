@@ -212,18 +212,13 @@ const TeamSportsCategory = () => {
     try {
       let filtered;
 
-      // Include URL param category in filtering if it exists
-      const categoriesToFilter = name
-        ? [...new Set([name, ...selectedCategories])] // Remove duplicates
-        : selectedCategories;
-
-      if (categoriesToFilter.length === 0) {
-        // If no categories selected and no URL param, show all
+      if (selectedCategories.length === 0) {
+        // Show all activities when no categories are selected
         filtered = activities;
       } else {
-        // Filter by all selected categories including URL param
+        // Filter by selected categories
         filtered = activities.filter((activity) =>
-          categoriesToFilter.includes(activity.category)
+          selectedCategories.includes(activity.category)
         );
       }
 

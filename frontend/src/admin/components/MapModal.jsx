@@ -64,7 +64,7 @@ const MapModal = ({ location, locationMap, createCustomIcon }) => {
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="w-[110px] h-[33px] md:w-[137px] my-4 bg-[#E55938] rounded-3xl text-xs md:text-sm text-white custom-semibold flex items-center justify-center"
+        className=" md:w-[137px] my-4 py-3 px-4 bg-[#E55938] rounded-3xl text-xs md:text-sm text-white custom-semibold flex items-center justify-center"
       >
         View on map
       </button>

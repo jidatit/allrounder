@@ -9,6 +9,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
@@ -24,22 +25,24 @@ const ActivityManagement = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchActivities = async () => {
-      try {
-        const querySnapshot = await getDocs(collection(db, "activities"));
-        const activitiesData = querySnapshot.docs.map((doc) => ({
+    const unsubscribe = onSnapshot(
+      collection(db, "activities"),
+      (snapshot) => {
+        const activitiesData = snapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
         }));
         setActivities(activitiesData);
         setLoading(false);
-      } catch (error) {
+      },
+      (error) => {
         console.error("Error fetching activities:", error);
         setLoading(false);
       }
-    };
+    );
 
-    fetchActivities();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
   if (loading) {
     return <ActivitySkeletonLoader />;
@@ -78,34 +81,20 @@ const ActivityManagement = () => {
   };
   const deleteFeatured = async (activityId) => {
     try {
-      // Create a query to find the document with matching activityId
-      const activitiesRef = collection(db, "featuredActivities");
-      const q = query(activitiesRef, where("activityId", "==", activityId));
+      const featuredRef = collection(db, "featuredActivities");
+      const q = query(featuredRef, where("activityId", "==", activityId));
 
-      // Get the document that matches the activityId
       const querySnapshot = await getDocs(q);
-
       if (!querySnapshot.empty) {
-        // Get the first matching document
         const documentToDelete = querySnapshot.docs[0];
-
-        // Delete the document using its document ID
         await deleteDoc(doc(db, "featuredActivities", documentToDelete.id));
-
-        // Update the local state immediately
-        setActivities((prevActivities) =>
-          prevActivities.filter(
-            (activity) => activity.activityId !== activityId
-          )
-        );
-
-        toast.success("Activity deleted successfully");
+        toast.success("Featured activity deleted successfully");
       } else {
-        toast.error("Activity not found");
+        toast.error("Featured activity not found");
       }
     } catch (error) {
-      console.error("Error deleting activity:", error);
-      toast.error("Error deleting activity: " + error.message);
+      console.error("Error deleting featured activity:", error);
+      toast.error("Error deleting featured activity: " + error.message);
     }
   };
   return (
@@ -185,40 +174,36 @@ const BlogCard = ({
   let featureActivityParam = "simpleActivity";
   const [featuredActivities, setFeaturedActivities] = useState([]);
   useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          collection(db, "featuredActivities")
-        );
-        const activitiesData = querySnapshot.docs.map((doc) => ({
+    const unsubscribe = onSnapshot(
+      collection(db, "featuredActivities"),
+      (snapshot) => {
+        const activitiesData = snapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
         }));
         setFeaturedActivities(activitiesData);
-      } catch (error) {
-        console.error("Error fetching activities:", error);
+      },
+      (error) => {
+        console.error("Error fetching featured activities:", error);
       }
-    };
+    );
 
-    fetchFeatures();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
+
   const handleAddToFeature = async () => {
     try {
-      // Check if the activity is already featured
-      const featuredActivitiesRef = collection(db, "featuredActivities");
-      const q = query(
-        featuredActivitiesRef,
-        where("activityId", "==", activityIdParam)
-      );
-      const querySnapshot = await getDocs(q);
+      const featuredRef = collection(db, "featuredActivities");
+      const q = query(featuredRef, where("activityId", "==", activityIdParam));
 
+      const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         toast.info("This activity is already featured!");
         return;
       }
 
-      // Add the activity to the featuredActivities collection
-      await addDoc(featuredActivitiesRef, {
+      await addDoc(featuredRef, {
         ...activityData,
         activityId: activityIdParam,
         featuredAt: new Date(),
@@ -286,7 +271,17 @@ const BlogCard = ({
               <button
                 onClick={(e) => {
                   e.preventDefault();
-                  deleteFeatured(activityIdParam);
+                  if (
+                    featuredActivities.some(
+                      (featured) => featured.activityId === activityIdParam
+                    )
+                  ) {
+                    // If the activity is already featured, remove it
+                    deleteFeatured(activityIdParam);
+                  } else {
+                    // If the activity is not featured, add it
+                    handleAddToFeature();
+                  }
                 }}
                 className="flex items-center  bg-[#E55938] text-white rounded-full px-3 py-1 lg:px-2.5 xl::px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base w-full ssm:w-auto justify-center ssm:justify-start"
               >

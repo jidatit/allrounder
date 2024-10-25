@@ -14,6 +14,7 @@ import {
   deleteDoc,
   doc,
   getDocs,
+  onSnapshot,
   query,
   where,
 } from "firebase/firestore";
@@ -259,10 +260,10 @@ const TeamSportsCategory = () => {
               onFilterChange={handleFilterChange}
               initialCategory={name}
             />
-            <button className="bg-[#EBEBEB] flex items-center justify-center lg:p-2 p-1 px-6 lg:px-8 rounded-full text-sm lg:text-xl gap-1">
+            {/* <button className="bg-[#EBEBEB] flex items-center justify-center lg:p-2 p-1 px-6 lg:px-8 rounded-full text-sm lg:text-xl gap-1">
               <HiOutlineAdjustmentsHorizontal />
               <p className="text-sm">Filters</p>
-            </button>
+            </button> */}
           </div>
 
           <div className="w-full flex mt-3 lg:pt-8 pt-4 gap-y-6 flex-col lg:flex-row">
@@ -321,6 +322,7 @@ const BlogCard = ({
   deleteFeatured,
 }) => {
   const { currentUser } = useAuth();
+  console.lo;
   const handleDelete = async () => {
     // Add delete functionality here
     if (window.confirm("Are you sure you want to delete this activity?")) {
@@ -330,21 +332,16 @@ const BlogCard = ({
 
   const handleAddToFeature = async () => {
     try {
-      // Check if the activity is already featured
-      const featuredActivitiesRef = collection(db, "featuredActivities");
-      const q = query(
-        featuredActivitiesRef,
-        where("activityId", "==", activityIdParam)
-      );
-      const querySnapshot = await getDocs(q);
+      const featuredRef = collection(db, "featuredActivities");
+      const q = query(featuredRef, where("activityId", "==", activityIdParam));
 
+      const querySnapshot = await getDocs(q);
       if (!querySnapshot.empty) {
         toast.info("This activity is already featured!");
         return;
       }
 
-      // Add the activity to the featuredActivities collection
-      await addDoc(featuredActivitiesRef, {
+      await addDoc(featuredRef, {
         ...activityData,
         activityId: activityIdParam,
         featuredAt: new Date(),
@@ -359,24 +356,23 @@ const BlogCard = ({
   let featureActivityParam = "simpleActivity";
 
   const [featuredActivities, setFeaturedActivities] = useState([]);
-
   useEffect(() => {
-    const fetchFeatures = async () => {
-      try {
-        const querySnapshot = await getDocs(
-          collection(db, "featuredActivities")
-        );
-        const activitiesData = querySnapshot.docs.map((doc) => ({
+    const unsubscribe = onSnapshot(
+      collection(db, "featuredActivities"),
+      (snapshot) => {
+        const activitiesData = snapshot.docs.map((doc) => ({
           ...doc.data(),
           docId: doc.id,
         }));
         setFeaturedActivities(activitiesData);
-      } catch (error) {
-        console.error("Error fetching activities:", error);
+      },
+      (error) => {
+        console.error("Error fetching featured activities:", error);
       }
-    };
+    );
 
-    fetchFeatures();
+    // Cleanup subscription on unmount
+    return () => unsubscribe();
   }, []);
 
   return (
@@ -431,20 +427,34 @@ const BlogCard = ({
 
             {/* Bottom buttons */}
             <div className="flex flex-col w-full smd:flex-row justify-between items-start ssm:items-center gap-4 smd:gap-0 mt-4">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  deleteFeatured(activityIdParam);
-                }}
-                className="flex items-center  bg-[#E55938] text-white rounded-full px-3 py-1 lg:px-2.5 xl::px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base w-full ssm:w-auto justify-center ssm:justify-start"
-              >
-                <MdStarRate className="mr-1" />
-                {featuredActivities.some(
-                  (featured) => featured.activityId === activityIdParam
-                )
-                  ? "Remove from Featured"
-                  : "Add to Feature"}
-              </button>
+              {currentUser?.userType === "admin" ? (
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (
+                      featuredActivities.some(
+                        (featured) => featured.activityId === activityIdParam
+                      )
+                    ) {
+                      // If the activity is already featured, remove it
+                      deleteFeatured(activityIdParam);
+                    } else {
+                      // If the activity is not featured, add it
+                      handleAddToFeature();
+                    }
+                  }}
+                  className="flex items-center  bg-[#E55938] text-white rounded-full px-3 py-1 lg:px-2.5 xl::px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base w-full ssm:w-auto justify-center ssm:justify-start"
+                >
+                  <MdStarRate className="mr-1" />
+                  {featuredActivities.some(
+                    (featured) => featured.activityId === activityIdParam
+                  )
+                    ? "Remove from Featured"
+                    : "Add to Feature"}
+                </button>
+              ) : (
+                ""
+              )}
 
               {currentUser?.userType === "admin" && (
                 <div className="flex flex-col ssm:flex-row items-start ssm:items-center space-x-2 md:space-x-0 lg:space-x-4 w-full ssm:w-auto">

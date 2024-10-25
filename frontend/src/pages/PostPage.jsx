@@ -755,6 +755,7 @@ const PostPage = () => {
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
                           sponsored={activity.sponsored}
+                          activityId={activity.activityId}
                         />
                       </div>
                     ))}
@@ -807,6 +808,7 @@ const PostPage = () => {
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]}
                           sponsored={activity.sponsored}
+                          activityId={activity.activityId}
                         />
                       </div>
                     ))}

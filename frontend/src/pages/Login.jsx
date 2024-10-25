@@ -74,7 +74,7 @@ const LoginPage = () => {
         <img
           src="/login.jpeg"
           alt=""
-          className="object-cover object-center h-full w-full"
+          className="object-cover object-center h-[85vh] w-full mt-5"
         />
       </div>
       <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex-col">

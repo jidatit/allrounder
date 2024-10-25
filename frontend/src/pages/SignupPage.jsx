@@ -65,7 +65,7 @@ const SignupPage = () => {
         <img
           src="/signup.jpeg"
           alt=""
-          className="object-cover object-center h-[90vh] w-full"
+          className="object-cover object-center h-[85vh] mt-5 w-full"
         />
       </div>
       <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex-col">

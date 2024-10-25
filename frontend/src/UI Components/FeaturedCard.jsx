@@ -21,6 +21,7 @@ const FeaturedCard = ({
 }) => {
   const featureActivityParam = "simpleActivity";
   const activityIdParam = activityId;
+  console.log("featureActivityParam", activityIdParam);
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}

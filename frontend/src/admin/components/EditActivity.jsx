@@ -233,17 +233,36 @@ const EditActivityComponent = () => {
 
   const editActivity = async (formData) => {
     try {
+      // References to both collections with correct collection name
       const activityRef = doc(db, "activities", formData.documentId);
 
+      // Get the document from featuredActivities if activity is featured
+      const featuredQuery = query(
+        collection(db, "featuredActivities"),
+        where("activityId", "==", formData.activityId)
+      );
+      const featuredSnapshot = await getDocs(featuredQuery);
+
+      // Get the featured document ID if it exists
+      let featuredDocId = null;
+      if (!featuredSnapshot.empty) {
+        featuredDocId = featuredSnapshot.docs[0].id;
+      }
+
+      // Reference to featured activity if it exists
+      const featuredActivityRef = featuredDocId
+        ? doc(db, "featuredActivities", featuredDocId)
+        : null;
+
       // Fetch current data
-      const docSnapshot = await getDoc(activityRef);
-      const currentData = docSnapshot.data();
+      const activitySnapshot = await getDoc(activityRef);
+      const currentData = activitySnapshot.data();
       const currentImageUrls = currentData.imageUrls || [];
 
       // Create a new array for updated image URLs
       let updatedImageUrls = [];
 
-      // Loop through the images in the formData
+      // Handle image uploads
       for (let i = 0; i < formData.images.length; i++) {
         if (formData.images[i] instanceof File) {
           // If there's a new image, upload it
@@ -309,8 +328,20 @@ const EditActivityComponent = () => {
         updatedAt: serverTimestamp(),
       };
 
-      // Update the document
-      await updateDoc(activityRef, updateObject);
+      // Update both documents if featured activity exists
+      if (featuredActivityRef) {
+        await Promise.all([
+          updateDoc(activityRef, updateObject),
+          updateDoc(featuredActivityRef, updateObject),
+        ]);
+        console.log(
+          "Updated both activities and featuredActivities collections"
+        );
+      } else {
+        // If only exists in activities collection, update just that one
+        await updateDoc(activityRef, updateObject);
+        console.log("Updated only activities collection");
+      }
 
       return formData.activityId;
     } catch (error) {
@@ -318,14 +349,46 @@ const EditActivityComponent = () => {
       throw new Error(`Failed to edit activity: ${error.message}`);
     }
   };
+
+  // Helper function to check if an activity exists in featured collection
+  const isActivityFeatured = async (activityId) => {
+    try {
+      const querySnapshot = await getDocs(
+        query(
+          collection(db, "featuredActivities"),
+          where("activityId", "==", activityId)
+        )
+      );
+      return !querySnapshot.empty;
+    } catch (error) {
+      console.error("Error checking featured status:", error);
+      return false;
+    }
+  };
+
+  const handleEditActivity = async (formData) => {
+    try {
+      const result = await editActivity(formData);
+      const isFeatured = await isActivityFeatured(formData.activityId);
+
+      if (isFeatured) {
+        toast.success("Activity updated successfully in both collections!");
+      } else {
+        toast.success("Activity updated successfully!");
+      }
+      return result;
+    } catch (error) {
+      toast.error("Failed to update activity: " + error.message);
+      throw error;
+    }
+  };
+
   const handleEditSubmit = async (e) => {
     e.preventDefault();
     try {
       setLoading(true);
-      const updatedActivityId = await editActivity(formData);
-      toast.success(
-        `Activity updated successfully with ID: ${updatedActivityId}`
-      );
+      const updatedActivityId = await handleEditActivity(formData);
+      // Toast is already handled in handleEditActivity
     } catch (error) {
       console.error("Form submission error:", error);
       toast.error(error.message || "Error submitting form");

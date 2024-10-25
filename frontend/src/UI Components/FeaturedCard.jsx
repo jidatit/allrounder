@@ -7,6 +7,10 @@ import {
 } from "react-icons/md";
 import { Link } from "react-router-dom";
 
+import { useState, useEffect } from "react";
+import { db } from "../config/firebase";
+import { collection, getDocs, query, where } from "firebase/firestore";
+
 const FeaturedCard = ({
   title,
   duration,
@@ -19,12 +23,35 @@ const FeaturedCard = ({
   sponsored,
   activityId,
 }) => {
+  const [isFeatured, setIsFeatured] = useState(false);
   const featureActivityParam = "simpleActivity";
-  const activityIdParam = activityId;
-  console.log("featureActivityParam", activityIdParam);
+
+  useEffect(() => {
+    const checkFeaturedStatus = async () => {
+      try {
+        // Create a query to check if the activity exists in featured activities
+        const featuredActivitiesRef = collection(db, "featuredActivities");
+        const q = query(
+          featuredActivitiesRef,
+          where("activityId", "==", activityId)
+        );
+
+        const querySnapshot = await getDocs(q);
+        setIsFeatured(!querySnapshot.empty); // Will be true if the activity is found
+      } catch (error) {
+        console.error("Error checking featured status:", error);
+        setIsFeatured(false);
+      }
+    };
+
+    if (activityId) {
+      checkFeaturedStatus();
+    }
+  }, [activityId]);
+
   return (
     <Link
-      to={`/post/${activityIdParam}/${featureActivityParam}`}
+      to={`/post/${activityId}/${featureActivityParam}`}
       className="block w-full"
     >
       <div className="mx-auto max-w-[270px] w-full rounded-lg shadow-lg overflow-hidden bg-white">
@@ -34,8 +61,8 @@ const FeaturedCard = ({
             alt={title}
             className="w-full h-[180px] object-cover rounded-lg"
           />
-          {sponsored && (
-            <span className="absolute bottom-3 right-5 bg-[#E55938] font-Montserrat text-white text-sm px-5 py-1 rounded-full">
+          {isFeatured && (
+            <span className="absolute bottom-2 right-2 bg-[#E55938] font-Montserrat text-white text-sm px-5 py-2 rounded-full">
               Sponsored
             </span>
           )}

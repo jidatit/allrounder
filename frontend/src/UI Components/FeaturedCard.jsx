@@ -55,14 +55,14 @@ const FeaturedCard = ({
       className="block w-full"
     >
       <div className="mx-auto max-w-[270px] w-full rounded-lg shadow-lg overflow-hidden bg-white">
-        <div className="relative">
+        <div className="relative p-3">
           <img
             src={imageUrl}
             alt={title}
             className="w-full h-[180px] object-cover rounded-lg"
           />
           {isFeatured && (
-            <span className="absolute bottom-2 right-2 bg-[#E55938] font-Montserrat text-white text-sm px-5 py-2 rounded-full">
+            <span className="absolute bottom-5 right-4 bg-[#E55938] font-Montserrat text-white text-sm px-5 py-2 rounded-full">
               Sponsored
             </span>
           )}

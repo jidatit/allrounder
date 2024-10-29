@@ -520,7 +520,7 @@ const PostPage = () => {
       4: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
       5: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
       6: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full md:w-4/5 lg:w-1/2 xl:w-2/5", // Default responsive widths
+      default: "w-full lg:w-[95%] xl:w-[100%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;

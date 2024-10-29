@@ -6,7 +6,7 @@ const useSliderSettings = (featuredActivities) => {
       dots: true,
       infinite: featuredActivities.length > 1,
       speed: 500,
-      slidesToShow: Math.min(featuredActivities.length),
+      slidesToShow: Math.min(5, featuredActivities.length),
       slidesToScroll: 1,
       autoplay: featuredActivities.length > 1,
       autoplaySpeed: 3000,

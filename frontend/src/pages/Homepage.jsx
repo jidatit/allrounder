@@ -251,15 +251,14 @@ const Homepage = () => {
       1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
       2: "w-full smd:w-[87%] md:w-[65%] lg:w-[60%] xl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
       3: "w-full smd:w-[78%] md:w-[100%] lg:w-[90%] xl:w-[70%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full lg:w-[90%] xl:w-[100%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full lg:w-[95%] xl:w-[100%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full lg:w-[95%] xl:w-[100%]", // Default responsive widths
+      4: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
   };
-
   return (
     <main>
       <section>
@@ -315,14 +314,14 @@ const Homepage = () => {
       </section>
       {/* FEATURED CARD */}
       <section className="h-full w-full mb-16 mt-10">
-        <div className="h-full w-full justify-center items-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
+        <div className="h-full w-full justify-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
           {featuredActivities?.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center">
               <p className="text-2xl">No Featured activities</p>
             </div>
           ) : (
             <>
-              <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
+              <h2 className="custom-bold text-2xl md:text-4xl ml-14 lg:text-5xl mb-10">
                 Featured Activities
               </h2>
               <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>

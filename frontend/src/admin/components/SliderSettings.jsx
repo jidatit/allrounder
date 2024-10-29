@@ -1,12 +1,12 @@
 import React, { useMemo } from "react";
 
 const useSliderSettings = (featuredActivities) => {
-  const settings2 = useMemo(
+  const settings = useMemo(
     () => ({
       dots: true,
       infinite: featuredActivities.length > 1,
       speed: 500,
-      slidesToShow: Math.min(5, featuredActivities.length),
+      slidesToShow: Math.min(4, featuredActivities.length),
       slidesToScroll: 1,
       autoplay: featuredActivities.length > 1,
       autoplaySpeed: 3000,
@@ -14,37 +14,49 @@ const useSliderSettings = (featuredActivities) => {
       centerPadding: "0px",
       responsive: [
         {
+          // Extra large screens
           breakpoint: 1360,
           settings: {
-            slidesToShow: Math.min(4, featuredActivities.length),
+            slidesToShow: 3,
             slidesToScroll: 1,
+            infinite: true,
+            dots: true,
             centerMode: featuredActivities.length < 3,
             centerPadding: "0px",
           },
         },
         {
-          breakpoint: 1024,
+          // Large screens
+          breakpoint: 1100,
           settings: {
-            slidesToShow: Math.min(3, featuredActivities.length),
+            slidesToShow: 3,
             slidesToScroll: 1,
+            infinite: true,
+            dots: true,
             centerMode: featuredActivities.length < 3,
             centerPadding: "0px",
           },
         },
         {
+          // Medium screens
           breakpoint: 960,
           settings: {
-            slidesToShow: Math.min(2, featuredActivities.length),
+            slidesToShow: 2,
             slidesToScroll: 1,
+            infinite: true,
+            dots: true,
             centerMode: featuredActivities.length < 2,
             centerPadding: "0px",
           },
         },
         {
+          // Mobile screens
           breakpoint: 696,
           settings: {
             slidesToShow: 1,
             slidesToScroll: 1,
+            infinite: true,
+            dots: true,
             centerMode: true,
             centerPadding: "0px",
           },
@@ -54,7 +66,7 @@ const useSliderSettings = (featuredActivities) => {
     [featuredActivities.length]
   );
 
-  return settings2;
+  return settings;
 };
 
 export default useSliderSettings;

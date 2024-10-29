@@ -18,22 +18,22 @@ export const theme = {
     screens: {
       sssm: "380px",
       ssm: "450px",
-      smd: "700px",
+      smd: "800px",
       md: "960px",
-      lg: "1024px",
+      lg: "1040px",
       xl: "1280px",
       xxl: "1440px", // Add a custom 2xl breakpoint
       // Add a custom 3xl breakpoint
     },
     borderWidth: {
-      "1": "1px",
+      1: "1px",
     },
     fontFamily: {
       sans: ["Inter", "Helvetica", "Arial", "sans"],
       serif: ["Great Vibes", "serif"],
       radios: ["Radio Canada Big", "sans-serif"],
       joining: ["Satisfy", "cursive"],
-      poppins:["Poppins", "sans-serif"]
+      poppins: ["Poppins", "sans-serif"],
     },
     colors: {
       "light-black": "rgb(20, 20, 19)",

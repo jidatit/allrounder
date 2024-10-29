@@ -1,51 +1,67 @@
-import React, { useMemo } from "react";
+import { useMemo } from "react";
 
 const useSliderSettings = (featuredActivities) => {
   const settings = useMemo(
     () => ({
-      dots: true,
+      dots: false,
       infinite: featuredActivities.length > 1,
       speed: 500,
-      slidesToShow: Math.min(4, featuredActivities.length),
+      slidesToShow: Math.min(featuredActivities.length, 4),
       slidesToScroll: 1,
       autoplay: featuredActivities.length > 1,
       autoplaySpeed: 3000,
-      centerMode: featuredActivities.length < 3,
+      centerMode:
+        featuredActivities.length > 1 && featuredActivities.length < 3,
       centerPadding: "0px",
       responsive: [
         {
           // Extra large screens
-          breakpoint: 1360,
+          breakpoint: 1340,
           settings: {
-            slidesToShow: 3,
+            slidesToShow: Math.min(featuredActivities.length, 4),
             slidesToScroll: 1,
-            infinite: true,
-            dots: true,
-            centerMode: featuredActivities.length < 3,
+
+            centerMode:
+              featuredActivities.length > 1 && featuredActivities.length < 3,
             centerPadding: "0px",
           },
         },
         {
           // Large screens
-          breakpoint: 1100,
+          breakpoint: 1300,
           settings: {
-            slidesToShow: 3,
+            slidesToShow: Math.min(
+              featuredActivities.length,
+              featuredActivities.length < 3 ? 2 : 3
+            ),
             slidesToScroll: 1,
-            infinite: true,
-            dots: true,
-            centerMode: featuredActivities.length < 3,
+
+            centerMode:
+              featuredActivities.length > 1 && featuredActivities.length < 3,
             centerPadding: "0px",
           },
         },
         {
           // Medium screens
+          breakpoint: 1100,
+          settings: {
+            slidesToShow: Math.min(featuredActivities.length, 3),
+            slidesToScroll: 1,
+
+            centerMode:
+              featuredActivities.length > 1 && featuredActivities.length < 3,
+            centerPadding: "0px",
+          },
+        },
+        {
+          // Smaller screens
           breakpoint: 960,
           settings: {
-            slidesToShow: 2,
+            slidesToShow: Math.min(featuredActivities.length, 2),
             slidesToScroll: 1,
-            infinite: true,
-            dots: true,
-            centerMode: featuredActivities.length < 2,
+
+            centerMode:
+              featuredActivities.length > 1 && featuredActivities.length < 2,
             centerPadding: "0px",
           },
         },
@@ -55,9 +71,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: 1,
             slidesToScroll: 1,
-            infinite: true,
-            dots: true,
-            centerMode: true,
+
+            centerMode: featuredActivities.length > 1,
             centerPadding: "0px",
           },
         },

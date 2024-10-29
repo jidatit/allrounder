@@ -515,12 +515,12 @@ const PostPage = () => {
     // Create classes for different screen sizes
     const baseClasses = {
       1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full smd:w-[87%] md:w-[65%] lg:w-[60%] xl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full smd:w-[78%] md:w-[100%] lg:w-[90%] xl:w-[70%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Default responsive widths
+      2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] smd:w-[84%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[82%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
@@ -532,12 +532,12 @@ const PostPage = () => {
     // Create classes for different screen sizes
     const baseClasses = {
       1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full smd:w-[87%] md:w-[65%] lg:w-[60%] xl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full smd:w-[78%] md:w-[100%] lg:w-[90%] xl:w-[70%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full smd:w-[75%] md:w-[99%] lg:w-[90%] xl:w-[95%]", // Default responsive widths // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full smd:w-[75%] md:w-[99%] lg:w-[90%] xl:w-[95%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full smd:w-[75%] md:w-[99%] lg:w-[90%] xl:w-[95%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Default responsive widths
+      2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] smd:w-[84%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[82%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;

@@ -21,7 +21,7 @@ export const theme = {
       smd: "800px",
       md: "960px",
       lg: "1040px",
-      xl: "1280px",
+      xl: "1300px",
       xxl: "1440px", // Add a custom 2xl breakpoint
       // Add a custom 3xl breakpoint
     },

@@ -249,12 +249,12 @@ const Homepage = () => {
     // Create classes for different screen sizes
     const baseClasses = {
       1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full smd:w-[87%] md:w-[65%] lg:w-[60%] xl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full smd:w-[78%] md:w-[100%] lg:w-[90%] xl:w-[70%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[95%]", // Default responsive widths
+      2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] smd:w-[84%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[82%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
@@ -314,14 +314,14 @@ const Homepage = () => {
       </section>
       {/* FEATURED CARD */}
       <section className="h-full w-full mb-16 mt-10">
-        <div className="h-full w-full justify-center mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
+        <div className="h-full px-4 sm:px-4 pt-20 max-w-[1440px] justify-center items-center lg:items-start mx-auto flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
           {featuredActivities?.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center">
               <p className="text-2xl">No Featured activities</p>
             </div>
           ) : (
             <>
-              <h2 className="custom-bold text-2xl md:text-4xl ml-14 lg:text-5xl mb-10">
+              <h2 className="custom-bold text-2xl ml-10 md:text-4xl lg:text-5xl mb-10">
                 Featured Activities
               </h2>
               <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
@@ -343,24 +343,23 @@ const Homepage = () => {
                     </div>
                   ))}
                 </Slider>
-                {featuredActivities.length > slidesToShow && (
-                  <>
-                    <button
-                      className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                      onClick={previous}
-                    >
-                      <FaChevronLeft />
-                    </button>
-                    <button
-                      className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                      onClick={next}
-                    >
-                      <FaChevronRight />
-                    </button>
-                  </>
-                )}
+
+                <>
+                  <button
+                    className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                    onClick={previous}
+                  >
+                    <FaChevronLeft />
+                  </button>
+                  <button
+                    className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                    onClick={next}
+                  >
+                    <FaChevronRight />
+                  </button>
+                </>
               </div>
-              <div className="flex item justify-center mt-4">
+              <div className="flex item items-center w-full justify-center mt-4">
                 <Link
                   to={`/allActivities`}
                   className=" w-[110px] h-[33px]  md:w-[137px]  lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center"

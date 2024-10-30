@@ -14,11 +14,26 @@ const useSliderSettingsActivity = (relatedActivities) => {
       centerPadding: "0px",
       responsive: [
         {
-          breakpoint: 1360,
+          breakpoint: 1340,
           settings: {
-            slidesToShow: Math.min(3, relatedActivities.length),
+            slidesToShow: Math.min(4, relatedActivities.length),
             slidesToScroll: 1,
             centerMode: relatedActivities.length === 1,
+            centerPadding: "0px",
+          },
+        },
+        {
+          // Large screens
+          breakpoint: 1300,
+          settings: {
+            slidesToShow: Math.min(
+              relatedActivities.length,
+              relatedActivities.length < 3 ? 2 : 3
+            ),
+            slidesToScroll: 1,
+
+            centerMode:
+              relatedActivities.length > 1 && relatedActivities.length < 3,
             centerPadding: "0px",
           },
         },

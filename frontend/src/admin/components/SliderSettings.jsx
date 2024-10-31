@@ -11,7 +11,7 @@ const useSliderSettings = (featuredActivities) => {
       autoplay: true,
       autoplaySpeed: 3000,
       centerMode: true,
-      centerPadding: "90px",
+      centerPadding: "80px",
 
       responsive: [
         {
@@ -21,7 +21,7 @@ const useSliderSettings = (featuredActivities) => {
             slidesToShow: Math.min(featuredActivities.length, 3),
             slidesToScroll: 1,
             centerMode: true,
-            centerPadding: "140px",
+            centerPadding: "100px",
           },
         },
         {

@@ -22,6 +22,7 @@ const FeaturedCard = ({
   imageUrl,
   sponsored,
   activityId,
+  relatedActivities = 4,
 }) => {
   const [isFeatured, setIsFeatured] = useState(false);
   const featureActivityParam = "simpleActivity";
@@ -54,7 +55,9 @@ const FeaturedCard = ({
       to={`/post/${activityId}/${featureActivityParam}`}
       className="block w-full"
     >
-      <div className="mx-auto w-full rounded-lg shadow-lg overflow-hidden bg-white">
+      <div
+        className={`mx-auto w-full rounded-lg shadow-lg overflow-hidden bg-white`}
+      >
         <div className="relative p-3">
           <img
             src={imageUrl}

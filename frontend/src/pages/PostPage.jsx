@@ -35,7 +35,7 @@ const PostPage = () => {
   const [featuredActivities, setFeaturedActivities] = useState([]);
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
-  console.log("activityIdParam", activityIdParam);
+
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -69,7 +69,7 @@ const PostPage = () => {
           docId: doc.id,
         }));
         setActivities(activitiesData);
-        console.log("activitiesData", activitiesData);
+
         // Fetch the location coordinates using geocoding
         const locations = await Promise.all(
           activitiesData.map(async (activity) => {
@@ -511,16 +511,17 @@ const PostPage = () => {
 
   const getContainerWidth2 = () => {
     const totalItems = featuredActivities?.length || 0;
-    console.log("totalItems", totalItems);
+
     // Create classes for different screen sizes
     const baseClasses = {
-      1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full sssm:w-[92%] smd:w-[84%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
-      default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[82%]", // Default responsive widths
+      1: "w-full sssm:w-[100%] smd:w-[50%] md:w-[40%] lg:w-[40%] xl:w-[25%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full sssm:w-[85%] ssm:w-[90%] smd:w-[88%] md:w-[65%] lg:w-[70%] xl:w-[58%] xxl:w-[60%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full sssm:w-[82%] smd:w-[99%] md:w-[100%] lg:w-[94%] xl:w-[83%] xxl:w-[82%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 85% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      default:
+        "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
@@ -528,17 +529,17 @@ const PostPage = () => {
 
   const getContainerWidth = () => {
     const totalItems = relatedActivities?.length || 0;
-    console.log("totalItems", totalItems);
+
     // Create classes for different screen sizes
     const baseClasses = {
-      1: "w-full md:w-4/5 lg:w-1/2 xl:w-[40%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
-      2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
-      3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
-      4: "w-full sssm:w-[100%] smd:w-[88%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full sssm:w-[100%] smd:w-[88%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full sssm:w-[100%] smd:w-[88%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      1: "w-full sssm:w-[100%] smd:w-[50%] md:w-[40%] lg:w-[40%] xl:w-[25%]", // Full on mobile, 80% on tablet, 50% on desktop, 40% on xl
+      2: "w-full sssm:w-[85%] ssm:w-[90%] smd:w-[88%] md:w-[65%] lg:w-[70%] xl:w-[58%] xxl:w-[60%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
+      3: "w-full sssm:w-[82%] smd:w-[99%] md:w-[100%] lg:w-[94%] xl:w-[83%] xxl:w-[82%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
+      4: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
+      5: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Full on mobile and tablet, 95% on desktop, 85% on xl
       default:
-        "w-full sssm:w-[100%] smd:w-[88%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Default responsive widths
+        "w-full sssm:w-[92%] ssm:w-[92%] smd:w-[100%] md:w-[95%] lg:w-[96%] xl:w-[100%] xxl:w-[98%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
@@ -743,10 +744,12 @@ const PostPage = () => {
                 <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-10">
                   Related Activities
                 </h2>
-                <div className={`relative pb-5 mx-auto ${getContainerWidth()}`}>
+                <div
+                  className={`relative pb-5 pt-5 mx-auto ${getContainerWidth()}`}
+                >
                   <Slider ref={sliderRef} {...settings24}>
                     {relatedActivities.map((activity, index) => (
-                      <div key={index}>
+                      <div key={index} className="px-4">
                         <FeaturedCard
                           title={activity.title}
                           duration={activity.duration || "Duration 2 hours"}
@@ -758,26 +761,25 @@ const PostPage = () => {
                           imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
                           sponsored={activity.sponsored}
                           activityId={activity.activityId}
+                          count={relatedActivities.length}
                         />
                       </div>
                     ))}
                   </Slider>
-                  {showNavigation && (
-                    <>
-                      <button
-                        className="button absolute top-[48%]  left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                        onClick={() => previous2()}
-                      >
-                        <FaChevronLeft />
-                      </button>
-                      <button
-                        className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8  rounded-full custom-shadow flex items-center justify-center text-sm  lg:text-lg"
-                        onClick={() => next2()}
-                      >
-                        <FaChevronRight />
-                      </button>
-                    </>
-                  )}
+                  <>
+                    <button
+                      className="button absolute smd:-ml-6 top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={previous}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <button
+                      className="button absolute top-[48%] smd:-mr-6 right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={next}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </>
                 </div>
               </>
             )}
@@ -795,11 +797,11 @@ const PostPage = () => {
                   Featured Activities
                 </h2>
                 <div
-                  className={`relative pb-5 mx-auto ${getContainerWidth2()}`}
+                  className={`relative pb-5 pt-5 mx-auto ${getContainerWidth2()}`}
                 >
                   <Slider {...settings23} ref={sliderRef2}>
                     {featuredActivities.map((activity, index) => (
-                      <div key={index} className="px-2">
+                      <div key={index} className="px-4">
                         <FeaturedCard
                           title={activity.title}
                           duration={activity.duration || "Duration 2 hours"}
@@ -815,22 +817,21 @@ const PostPage = () => {
                       </div>
                     ))}
                   </Slider>
-                  {featuredActivities.length > slideToShow && (
-                    <>
-                      <button
-                        className="button absolute top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                        onClick={previous}
-                      >
-                        <FaChevronLeft />
-                      </button>
-                      <button
-                        className="button absolute top-[48%] right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                        onClick={next}
-                      >
-                        <FaChevronRight />
-                      </button>
-                    </>
-                  )}
+
+                  <>
+                    <button
+                      className="button absolute smd:-ml-6 top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={previous}
+                    >
+                      <FaChevronLeft />
+                    </button>
+                    <button
+                      className="button absolute top-[48%] smd:-mr-6 right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
+                      onClick={next}
+                    >
+                      <FaChevronRight />
+                    </button>
+                  </>
                 </div>
               </>
             )}

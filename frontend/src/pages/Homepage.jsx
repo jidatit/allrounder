@@ -252,13 +252,14 @@ const Homepage = () => {
       2: "w-full smd:w-[88%] md:w-[65%] lg:w-[60%] xl:w-[58%] xxl:w-[50%]", // Full on mobile, 85% on tablet, 70% on desktop, 60% on xl
       3: "w-full smd:w-[88%] md:w-[100%] lg:w-[88%] xl:w-[83%] xxl:w-[72%]", // Full on mobile, 90% on tablet, 75% on desktop, 66% on xl
       4: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 85% on desktop, 80% on xl
-      5: "w-full sssm:w-[92%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
-      6: "w-full sssm:w-[92%] smd:w-[84%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
+      5: "w-full sssm:w-[82%] smd:w-[80%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[94%]", // Full on mobile and tablet, 90% on desktop, 85% on xl
+      6: "w-full sssm:w-[92%] smd:w-[94%] md:w-[95%] lg:w-[88%] xl:w-[92%] xxl:w-[95%]", // Full on mobile and tablet, 95% on desktop, 90% on xl
       default: "w-full smd:w-[90%] md:w-[99%] lg:w-[95%] xl:w-[82%]", // Default responsive widths
     };
 
     return baseClasses[totalItems] || baseClasses.default;
   };
+
   return (
     <main>
       <section>
@@ -296,7 +297,7 @@ const Homepage = () => {
       </section>
       {/* CATEGORIES SECTION */}
       <section className="h-full w-full   ">
-        <div className="h-full w-full px-4 sm:px-8 pt-20 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
+        <div className="h-full max-w-[1440px] ssm:max-w-[1540px] px-4 sm:px-8 pt-20 lg:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl ">
             Discover Categories
           </h2>
@@ -314,10 +315,10 @@ const Homepage = () => {
       </section>
       {/* FEATURED CARD */}
       <section className="h-full w-full mb-16 mt-10">
-        <div className="h-full px-4 sm:px-4 pt-20 max-w-[1440px] justify-center items-center lg:items-start mx-auto flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
+        <div className="h-full px-4 sm:px-4 pt-20 max-w-[1440px] ssm:max-w-[1540px] justify-center items-center lg:items-start mx-auto flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
           {featuredActivities?.length === 0 ? (
             <div className="w-full h-full flex items-center justify-center">
-              <p className="text-2xl">No Featured activities</p>
+              <p className="text-2xl">No Featured activities </p>
             </div>
           ) : (
             <>
@@ -327,19 +328,21 @@ const Homepage = () => {
               <div className={`relative pb-5 mx-auto ${getContainerWidth2()}`}>
                 <Slider {...settings23} ref={sliderRef2}>
                   {featuredActivities.map((activity, index) => (
-                    <div key={index} className="px-1">
-                      <FeaturedCard
-                        title={activity.title}
-                        duration={activity.duration || "Duration 2 hours"}
-                        date={activity.date || "2nd July – 2nd August"}
-                        ageRange={activity.ageRange || "6 – 12 Years"}
-                        reviews={activity.reviews || 584}
-                        rating={activity.rating || 4.5}
-                        price={activity.price || 35.0}
-                        imageUrl={activity.imageUrls?.[0]}
-                        sponsored={activity.sponsored}
-                        activityId={activity.activityId}
-                      />
+                    <div key={index} className="slide-item px-2">
+                      <div className="slide-content w-[250px] ssm:w-[280px] smd:w-[230px] md:w-[250px] lg:w-[250px] xl:w-[250px]">
+                        <FeaturedCard
+                          title={activity.title}
+                          duration={activity.duration || "Duration 2 hours"}
+                          date={activity.date || "2nd July – 2nd August"}
+                          ageRange={activity.ageRange || "6 – 12 Years"}
+                          reviews={activity.reviews || 584}
+                          rating={activity.rating || 4.5}
+                          price={activity.price || 35.0}
+                          imageUrl={activity.imageUrls?.[0]}
+                          sponsored={activity.sponsored}
+                          activityId={activity.activityId}
+                        />
+                      </div>
                     </div>
                   ))}
                 </Slider>
@@ -373,7 +376,7 @@ const Homepage = () => {
       </section>
       {/* EXPLORE PROGRAM */}
       <section className="h-full w-full  mb-12 md:mb-24  ">
-        <div className="h-full w-full px-4 sm:px-8 pt-20 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
+        <div className="h-full max-w-[1440px] ssm:max-w-[1540px] px-4 sm:px-8 pt-20 lg:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5 ">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl  mb-10 text-center  lg:text-start">
             Explore programs
           </h2>

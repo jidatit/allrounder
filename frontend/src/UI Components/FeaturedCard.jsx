@@ -54,7 +54,7 @@ const FeaturedCard = ({
       to={`/post/${activityId}/${featureActivityParam}`}
       className="block w-full"
     >
-      <div className="mx-auto max-w-[310px] md:max-w-[280px] lg:max-w-[290px] xl:max-w-[290px]  w-full rounded-lg shadow-lg overflow-hidden bg-white">
+      <div className="mx-auto w-full rounded-lg shadow-lg overflow-hidden bg-white">
         <div className="relative p-3">
           <img
             src={imageUrl}

@@ -331,7 +331,7 @@ const Homepage = () => {
               >
                 <Slider {...settings23} ref={sliderRef2}>
                   {featuredActivities.map((activity, index) => (
-                    <div key={index} className="slide-item px-4">
+                    <div key={index} className="slide-item px-4 py-4">
                       <FeaturedCard
                         title={activity.title}
                         duration={activity.duration || "Duration 2 hours"}

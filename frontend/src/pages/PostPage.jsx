@@ -749,7 +749,7 @@ const PostPage = () => {
                 >
                   <Slider ref={sliderRef} {...settings24}>
                     {relatedActivities.map((activity, index) => (
-                      <div key={index} className="px-4">
+                      <div key={index} className="px-4 py-4">
                         <FeaturedCard
                           title={activity.title}
                           duration={activity.duration || "Duration 2 hours"}
@@ -801,7 +801,7 @@ const PostPage = () => {
                 >
                   <Slider {...settings23} ref={sliderRef2}>
                     {featuredActivities.map((activity, index) => (
-                      <div key={index} className="px-4">
+                      <div key={index} className="px-4 py-4">
                         <FeaturedCard
                           title={activity.title}
                           duration={activity.duration || "Duration 2 hours"}

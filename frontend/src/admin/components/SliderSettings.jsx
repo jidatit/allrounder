@@ -4,15 +4,14 @@ const useSliderSettings = (featuredActivities) => {
   const settings = useMemo(
     () => ({
       dots: false,
-      infinite: true,
+      infinite: featuredActivities.length > 1, // Disable infinite for 1 slide
       speed: 500,
       slidesToShow: Math.min(featuredActivities.length, 4),
       slidesToScroll: 1,
-      autoplay: true,
+      autoplay: featuredActivities.length > 1, // Disable autoplay for 1 slide
       autoplaySpeed: 3000,
-      centerMode: true,
-      centerPadding: "80px",
-
+      centerMode: featuredActivities.length > 1, // Disable centerMode for 1 slide
+      centerPadding: featuredActivities.length > 1 ? "80px" : "0px", // No padding for 1 slide
       responsive: [
         {
           // Extra large screens
@@ -20,8 +19,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: Math.min(featuredActivities.length, 3),
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "100px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "100px" : "0px",
           },
         },
         {
@@ -33,8 +32,8 @@ const useSliderSettings = (featuredActivities) => {
               featuredActivities.length < 3 ? 2 : 3
             ),
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "60px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "60px" : "0px",
           },
         },
         {
@@ -43,8 +42,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: Math.min(featuredActivities.length, 3),
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "50px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "50px" : "0px",
           },
         },
         {
@@ -53,8 +52,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: Math.min(featuredActivities.length, 2),
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "120px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "120px" : "0px",
           },
         },
         {
@@ -63,8 +62,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: 2,
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "10px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "10px" : "0px",
           },
         },
         {
@@ -73,8 +72,8 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: 1,
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "60px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "60px" : "0px",
           },
         },
         {
@@ -83,15 +82,14 @@ const useSliderSettings = (featuredActivities) => {
           settings: {
             slidesToShow: 1,
             slidesToScroll: 1,
-            centerMode: true,
-            centerPadding: "30px",
+            centerMode: featuredActivities.length > 1,
+            centerPadding: featuredActivities.length > 1 ? "30px" : "0px",
           },
         },
       ],
     }),
     [featuredActivities.length]
   );
-
   return settings;
 };
 

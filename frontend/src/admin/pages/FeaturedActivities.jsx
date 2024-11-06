@@ -223,7 +223,10 @@ const BlogCard = ({
           <div className="w-2/3 flex pl-3 flex-col justify-between">
             <div>
               <div className="flex items-center justify-between w-full gap-2">
-                <h3 className="text-xl font-semibold mb-2">{name}</h3>
+                <h3 className="text-xl font-semibold mb-2">
+                  {" "}
+                  {name.length > 65 ? `${name.slice(0, 65)}...` : name}
+                </h3>
                 {featuredActivities.some(
                   (featured) => featured.activityId === activityIdParam
                 ) ? (

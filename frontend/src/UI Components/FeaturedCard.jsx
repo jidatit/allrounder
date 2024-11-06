@@ -72,7 +72,7 @@ const FeaturedCard = ({
         </div>
         <div className="py-4">
           <h3 className="px-4 text-lg custom-regular leading-[20px]">
-            {title}
+            {title.length > 20 ? `${title.slice(0, 20)}...` : title}
           </h3>
           <div className="px-4 py-3">
             <div className="flex items-center gap-2">

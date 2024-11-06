@@ -7,23 +7,23 @@ import {
   doc,
   getDoc,
   getDocs,
+  onSnapshot,
   query,
   updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import { Card, CardContent } from "@mui/material";
-import { IoStarSharp } from "react-icons/io5";
+import { IoStarHalfSharp, IoStarSharp } from "react-icons/io5";
 import ReviewsList from "../admin/components/ReviewList";
 
-const ReviewSection = ({ currentUser, activityId }) => {
+const ReviewSection = ({ currentUser, activityId, avatar }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
   const [rating, setRating] = useState(0);
   const [hoverRating, setHoverRating] = useState(0);
   const [description, setDescription] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [userImage, setUserImage] = useState("");
-  const [averageRating, setAverageRating] = useState(4.3);
 
   const handleSubmitReview = async () => {
     if (!description || rating === 0) {
@@ -33,15 +33,17 @@ const ReviewSection = ({ currentUser, activityId }) => {
 
     setIsSubmitting(true);
     try {
-      // First, fetch user details from users collection
-      const userDocRef = doc(db, "users", currentUser.uid);
-      const userDocSnap = await getDoc(userDocRef);
+      // Query the users collection to find the document with the matching uid
+      const usersRef = collection(db, "users");
+      const q = query(usersRef, where("uid", "==", currentUser.uid));
+      const querySnapshot = await getDocs(q);
 
-      if (!userDocSnap.exists()) {
+      if (querySnapshot.empty) {
         throw new Error("User details not found");
       }
 
-      const userData = userDocSnap.data();
+      const userDoc = querySnapshot.docs[0];
+      const userData = userDoc.data();
       const firstName = userData.firstName || "";
       const lastName = userData.lastName || "";
       const userProfileImage = userData.profileImage || userData.photoURL || ""; // Assuming profile image field name
@@ -58,14 +60,14 @@ const ReviewSection = ({ currentUser, activityId }) => {
 
       // Find the activity document
       const activitiesRef = collection(db, "activities");
-      const q = query(
+      const qActivity = query(
         activitiesRef,
         where("activityId", "==", Number(activityId))
       );
-      const querySnapshot = await getDocs(q);
+      const activitySnapshot = await getDocs(qActivity);
 
-      if (!querySnapshot.empty) {
-        const activityDoc = querySnapshot.docs[0];
+      if (!activitySnapshot.empty) {
+        const activityDoc = activitySnapshot.docs[0];
         // Update the reviews array
         await updateDoc(doc(db, "activities", activityDoc.id), {
           reviews: arrayUnion(newReview),
@@ -91,45 +93,57 @@ const ReviewSection = ({ currentUser, activityId }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchReviews = async () => {
-      try {
-        setLoading(true);
-        // Query the activities collection for the specific activity
-        const activitiesRef = collection(db, "activities");
-        const q = query(
-          activitiesRef,
-          where("activityId", "==", Number(activityId))
-        );
-        const querySnapshot = await getDocs(q);
+    if (!activityId) return;
 
+    const activitiesRef = collection(db, "activities");
+    const q = query(
+      activitiesRef,
+      where("activityId", "==", Number(activityId))
+    );
+
+    // Set up real-time listener with onSnapshot
+    const unsubscribe = onSnapshot(
+      q,
+      (querySnapshot) => {
         if (!querySnapshot.empty) {
           const activityDoc = querySnapshot.docs[0];
           const activityData = activityDoc.data();
-          // Get the reviews array from the activity document
+
+          // Get and sort reviews
           const activityReviews = activityData.reviews || [];
-          // Sort reviews by date (newest first)
           const sortedReviews = activityReviews.sort(
             (a, b) => new Date(b.date) - new Date(a.date)
           );
+
           setReviews(sortedReviews);
+          setError(null); // Clear any previous errors
         } else {
           setError("Activity not found");
+          setReviews([]);
         }
-      } catch (error) {
+        setLoading(false);
+      },
+      (error) => {
         console.error("Error fetching reviews:", error);
         setError("Failed to load reviews");
-      } finally {
         setLoading(false);
       }
-    };
+    );
 
-    if (activityId) {
-      fetchReviews();
-    }
+    // Cleanup listener on component unmount
+    return () => unsubscribe();
   }, [activityId]);
 
   // Get displayed reviews based on showAllReviews state
   const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+  const calculateAverageRating = (reviews) => {
+    if (reviews.length === 0) return 0;
+    const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return totalRating / reviews.length;
+  };
+
+  const averageRating = calculateAverageRating(reviews); // Decimal rating (e.g., 3.5)
+
   return (
     <section className="h-full w-full">
       <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
@@ -152,18 +166,29 @@ const ReviewSection = ({ currentUser, activityId }) => {
             </div>
             <div className="flex">
               <div className="flex items-center text-5xl">
-                {[...Array(5)].map((_, index) => (
-                  <IoStarSharp
-                    key={index}
-                    className={`text-[#FFA432] ${
-                      index < Math.floor(averageRating) ? "" : "text-[#CFD9DE]"
-                    }`}
-                  />
-                ))}
+                {[...Array(5)].map((_, index) => {
+                  if (index < Math.floor(averageRating)) {
+                    return (
+                      <IoStarSharp key={index} className="text-[#FFA432]" />
+                    );
+                  } else if (
+                    index === Math.floor(averageRating) &&
+                    averageRating % 1 >= 0.5
+                  ) {
+                    return (
+                      <IoStarHalfSharp key={index} className="text-[#FFA432]" />
+                    );
+                  } else {
+                    return (
+                      <IoStarSharp key={index} className="text-[#CFD9DE]" />
+                    );
+                  }
+                })}
               </div>
             </div>
           </div>
         </div>
+
         <div className="md:mt-0 mt-3">
           {!showReviewForm ? (
             <div className="flex justify-end items-end w-full">
@@ -271,6 +296,7 @@ const ReviewSection = ({ currentUser, activityId }) => {
           error={error}
           loading={loading}
           reviews={displayedReviews}
+          avatar={avatar}
         />
       </div>
     </section>

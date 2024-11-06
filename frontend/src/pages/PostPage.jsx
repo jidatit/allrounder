@@ -839,7 +839,11 @@ const PostPage = () => {
             )}
           </div>
         </section>
-        <ReviewSection currentUser={currentUser} activityId={activityIdParam} />
+        <ReviewSection
+          currentUser={currentUser}
+          activityId={activityIdParam}
+          avatar={"/avatar.jpeg"}
+        />
         {/* <section className="h-full w-full  ">
           <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-5">

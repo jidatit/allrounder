@@ -397,7 +397,7 @@ const BlogCard = ({
               {/* Title and Featured button */}
               <div className="flex flex-col ssm:flex-row items-start ssm:items-center justify-between w-full gap-2">
                 <h3 className="text-lg sssm:text-xl font-semibold mb-2">
-                  {name}
+                  {name.length > 55 ? `${name.slice(0, 55)}...` : name}
                 </h3>
                 {featuredActivities.some(
                   (featured) => featured.activityId === activityIdParam

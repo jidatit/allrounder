@@ -10,12 +10,17 @@ import { MdDeleteOutline, MdStarRate } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   query,
+  setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
@@ -24,6 +29,7 @@ import { useAuth } from "../context/authContext";
 import CategoryFilterDropdown from "../admin/components/CategoryDropdown";
 import ActivitiesMap from "../admin/components/ActivitiesMap";
 import ActivitySkeletonLoader from "../admin/components/ActivitySkeleton";
+import { IoStar, IoStarOutline } from "react-icons/io5";
 
 const createCustomIcon = (number) => {
   return L.divIcon({
@@ -35,11 +41,11 @@ const createCustomIcon = (number) => {
 };
 
 const TeamSportsCategory = () => {
-  const locations = [
-    { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
-    { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
-    { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
-  ];
+  // const locations = [
+  //   { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
+  //   { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
+  //   { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
+  // ];
   const [activities, setActivities] = useState([]);
   const { name } = useParams(); // Get category from URL params
   const [loading, setLoading] = useState(true);
@@ -85,7 +91,7 @@ const TeamSportsCategory = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
-        toast.error("Error fetching activities");
+
         setLoading(false);
       }
     };
@@ -131,7 +137,7 @@ const TeamSportsCategory = () => {
         setLoading(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
-        toast.error("Error fetching activities");
+
         setLoading(false);
       }
     };
@@ -248,7 +254,7 @@ const TeamSportsCategory = () => {
   let featureActivityParam = "simpleActivity";
   return (
     <main className="h-full w-screen">
-      <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5">
+      <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5 ">
         <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl">
             {name ? `${name} Activities` : "All Activities"}
@@ -322,7 +328,8 @@ const BlogCard = ({
   deleteFeatured,
 }) => {
   const { currentUser } = useAuth();
-  console.lo;
+  const [isInterested, setInterested] = useState(false);
+
   const handleDelete = async () => {
     // Add delete functionality here
     if (window.confirm("Are you sure you want to delete this activity?")) {
@@ -375,13 +382,100 @@ const BlogCard = ({
     return () => unsubscribe();
   }, []);
 
+  const handleInterestUpdate = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        // Document exists, check for interests field
+        if (userDocSnap.data().interests) {
+          // Interests field exists, update it by pushing the new activityId
+          await updateDoc(userDocRef, {
+            interests: arrayUnion(activityId),
+          });
+        } else {
+          // Interests field does not exist, create it with activityId in array
+          await setDoc(
+            userDocRef,
+            {
+              interests: [activityId],
+            },
+            { merge: true }
+          );
+        }
+      } else {
+        // Document does not exist, create it with the interests field
+        await setDoc(userDocRef, {
+          interests: [activityId],
+        });
+      }
+      toast.success("Activity added to Interested");
+      setInterested(true);
+    } catch (error) {
+      console.error("Error updating interests: ", error);
+      toast.error("Error adding Interest", error);
+    }
+  };
+
+  const removeInterest = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+
+      await updateDoc(userDocRef, {
+        interests: arrayRemove(activityId),
+      });
+      toast.success("Activity removed from Interested");
+      setInterested(false);
+      // toast.success("Interest Removed");
+    } catch (error) {
+      console.error("Error removing interest: ", error);
+    }
+  };
+
+  // Function to check if activityId exists in interests
+  const checkInterestExists = async (userId, activityId) => {
+    console.log(activityId);
+
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const interests = userDocSnap.data().interests || [];
+
+        return interests.includes(activityId);
+      } else {
+        console.warn("No document found for this user.");
+
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking interest: ", error);
+
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const checkInterest = async () => {
+      const isInterestAdded = await checkInterestExists(currentUser.id, docId);
+      if (isInterestAdded) {
+        setInterested(isInterestAdded);
+        console.log("check Interested from function", isInterestAdded);
+      }
+    };
+
+    checkInterest();
+  });
+
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
-      className="flex flex-col items-start gap-3 sssm:gap-5 justify-start p-2 sm:p-3 lg:p-4 w-full"
+      className="flex flex-col items-start gap-3 sssm:gap-5 justify-start p-2 sm:p-3 lg:p-4 w-full z-40  "
     >
-      <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full">
-        <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4">
+      <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full ">
+        <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4 ">
           {/* Image container */}
           <div className="w-full lg:w-[40%] smd:mr-4 h-[200px] sssm:h-[250px] smd:h-[30vh]">
             <img
@@ -392,7 +486,38 @@ const BlogCard = ({
           </div>
 
           {/* Content container */}
-          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3">
+          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3 relative">
+            <div>
+              {isInterested ? (
+                <button
+                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                  title="Add to My Interests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("activity removed", docId, currentUser);
+                    // handleInterestUpdate(currentUser.id, docId);
+                    removeInterest(currentUser.id, docId);
+                  }}
+                >
+                  <IoStar className="text-yellow-500" />
+                </button>
+              ) : (
+                <button
+                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                  title="Add to My Interests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("activity added", docId, currentUser);
+                    handleInterestUpdate(currentUser.id, docId);
+                  }}
+                >
+                  <IoStarOutline />
+                </button>
+              )}
+            </div>
+
             <div>
               {/* Title and Featured button */}
               <div className="flex flex-col ssm:flex-row items-start ssm:items-center justify-between w-full gap-2">
@@ -403,10 +528,10 @@ const BlogCard = ({
                   (featured) => featured.activityId === activityIdParam
                 ) && (
                   <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddToFeature();
-                    }}
+                    // onClick={(e) => {
+                    //   e.preventDefault();
+                    //   handleAddToFeature();
+                    // }}
                     className="flex items-center bg-[#E55938] text-white rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
                   >
                     <MdStarRate className="mr-1" />

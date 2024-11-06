@@ -4,6 +4,7 @@ import { CiUser } from "react-icons/ci";
 import { IoHeartCircleSharp } from "react-icons/io5";
 import { IoLogOutOutline } from "react-icons/io5";
 import { useAuth } from "../../context/authContext";
+
 const SideBar = ({ isSidebarExpanded }) => {
   const { handleLogout } = useAuth();
   const [activeItem, setActiveItem] = useState("My Profile");
@@ -47,8 +48,8 @@ const SideBar = ({ isSidebarExpanded }) => {
               My Profile
             </p>
           </Link>
-          {/* <Link
-            to=""
+          <Link
+            to="my-interests"
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group  ${
               activeItem === "My Interests"
                 ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
@@ -69,7 +70,7 @@ const SideBar = ({ isSidebarExpanded }) => {
             >
               My Interests
             </p>
-          </Link> */}
+          </Link>
           <Link
             to=""
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 hover:text-white group ${

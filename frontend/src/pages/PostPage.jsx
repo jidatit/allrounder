@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { IoShareOutline, IoStarOutline, IoStarSharp } from "react-icons/io5";
+import {
+  IoShareOutline,
+  IoStar,
+  IoStarOutline,
+  IoStarSharp,
+} from "react-icons/io5";
 import FeaturedCard from "../UI Components/FeaturedCard";
 import { PiCopy } from "react-icons/pi";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
@@ -7,7 +12,18 @@ import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  getDoc,
+  arrayRemove,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
@@ -16,6 +32,7 @@ import useSliderSettings from "../admin/components/SliderSettings";
 import useSliderSettingsActivity from "../admin/components/SliderSettingsActivity";
 import MapModal from "../admin/components/MapModal";
 import ShareButton from "../admin/components/SharedButton";
+import { useAuth } from "../context/authContext";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -30,11 +47,15 @@ const createCustomIcon = (number) => {
 };
 
 const PostPage = () => {
+  const { currentUser } = useAuth();
+
   const { activityIdParam } = useParams();
   const [relatedActivities, setRelatedActivities] = useState([]);
   const [featuredActivities, setFeaturedActivities] = useState([]);
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
+  const [isInterested, setInterested] = useState(false);
+  const [CheckingInterest, setCheckingInterest] = useState(false);
 
   useEffect(() => {
     fetchFeaturedActivities();
@@ -207,6 +228,98 @@ const PostPage = () => {
       toast.error("Failed to load related activities");
     }
   };
+
+  const handleInterestUpdate = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        // Document exists, check for interests field
+        if (userDocSnap.data().interests) {
+          // Interests field exists, update it by pushing the new activityId
+          await updateDoc(userDocRef, {
+            interests: arrayUnion(activityId),
+          });
+        } else {
+          // Interests field does not exist, create it with activityId in array
+          await setDoc(
+            userDocRef,
+            {
+              interests: [activityId],
+            },
+            { merge: true }
+          );
+        }
+      } else {
+        // Document does not exist, create it with the interests field
+        await setDoc(userDocRef, {
+          interests: [activityId],
+        });
+      }
+      toast.success("Activity added to Interested");
+      setInterested(true);
+    } catch (error) {
+      console.error("Error updating interests: ", error);
+      toast.error("Error adding Interest", error);
+    }
+  };
+
+  const removeInterest = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+
+      await updateDoc(userDocRef, {
+        interests: arrayRemove(activityId),
+      });
+      toast.success("Activity removed from Interested");
+      setInterested(false);
+      // toast.success("Interest Removed");
+    } catch (error) {
+      console.error("Error removing interest: ", error);
+    }
+  };
+
+  // Function to check if activityId exists in interests
+  const checkInterestExists = async (userId, activityId) => {
+    console.log(activityId);
+
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const interests = userDocSnap.data().interests || [];
+
+        return interests.includes(activityId);
+      } else {
+        console.warn("No document found for this user.");
+
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking interest: ", error);
+
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const checkInterest = async () => {
+      const isInterestAdded = await checkInterestExists(
+        currentUser.id,
+        formData.documentId
+      );
+      setCheckingInterest(isInterestAdded);
+      if (isInterestAdded) {
+        setInterested(isInterestAdded);
+        console.log("check Interested from function", isInterestAdded);
+      }
+    };
+
+    checkInterest(); // Call the async function
+  });
+
   const locations = [
     { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
     { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
@@ -229,102 +342,6 @@ const PostPage = () => {
       setTimeout(() => setCopied(false), 2000);
     });
   };
-
-  const activityCards = [
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-2.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-3.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-4.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-5.png",
-      sponsored: true,
-    },
-  ];
-
-  const CustomerReviews = [
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-
-      rating: 4, // Rating out of 5
-      title: "Lorem Ipsum Dolor Sit Amet, Consectetuer Adipiscing Elit.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-      rating: 4,
-      title: "Aenean Commodo Ligula Eget Dolor.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-
-      rating: 4, // Rating out of 5
-      title: "Cum Sociis Natoque Penatibus Et Magnis Dis Parturient Montese.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-  ];
 
   const rating = 3;
 
@@ -561,8 +578,33 @@ const PostPage = () => {
               {formData.title}
             </h2>
             <div className="flex md:items-center justify-between    flex-col md:flex-row md:w-[500px] lg:w-[650px]  mt-2 md:mt-6">
-              <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
-                <IoStarOutline /> <p>im Interested</p>
+              <div
+                className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1 cursor-pointer"
+                onClick={() => {
+                  console.log("Clicked");
+                  console.log(currentUser.id);
+                  console.log(formData.documentId);
+                  console.log("isInterested", isInterested);
+
+                  if (isInterested) {
+                    removeInterest(currentUser.id, formData.documentId);
+                    console.log("remove interested");
+                  } else {
+                    handleInterestUpdate(currentUser.id, formData.documentId);
+                    console.log("added Interest");
+                  }
+                }}
+              >
+                {isInterested ? (
+                  <>
+                    <IoStar className="text-yellow-500" />
+                    <p>Interested </p>
+                  </>
+                ) : (
+                  <>
+                    <IoStarOutline /> <p>im Interested </p>
+                  </>
+                )}
               </div>
               <ShareButton />
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
@@ -755,7 +797,7 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          reviews={activity.reviews || 584}
+                          // reviews={activity.reviews || 584}
                           rating={activity.rating || 4.5}
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used

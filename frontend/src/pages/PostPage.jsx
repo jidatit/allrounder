@@ -16,6 +16,8 @@ import useSliderSettings from "../admin/components/SliderSettings";
 import useSliderSettingsActivity from "../admin/components/SliderSettingsActivity";
 import MapModal from "../admin/components/MapModal";
 import ShareButton from "../admin/components/SharedButton";
+import ReviewSection from "../UI Components/ReviewSection";
+import { useAuth } from "../context/authContext";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -35,7 +37,7 @@ const PostPage = () => {
   const [featuredActivities, setFeaturedActivities] = useState([]);
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
-
+  const { currentUser } = useAuth();
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -755,7 +757,7 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          reviews={activity.reviews || 584}
+                          // reviews={activity.reviews || 584}
                           rating={activity.rating || 4.5}
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
@@ -807,7 +809,7 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          reviews={activity.reviews || 584}
+                          // reviews={activity.reviews || 584}
                           rating={activity.rating || 4.5}
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]}
@@ -837,9 +839,8 @@ const PostPage = () => {
             )}
           </div>
         </section>
-
-        {/* 
-        <section className="h-full w-full  ">
+        <ReviewSection currentUser={currentUser} activityId={activityIdParam} />
+        {/* <section className="h-full w-full  ">
           <div className="h-full w-full mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5">
             <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-5">
               Customer Reviews
@@ -872,12 +873,12 @@ const PostPage = () => {
                 </div>
               </div>
               <div className="md:mt-0 mt-3">
-                <button className="w-[110px] h-[33px]  md:w-[137px]  lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center">
+                <button className="w-[110px] h-[33px] md:w-[137px] lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm  lg:text-lg text-white custom-semibold flex items-center justify-center">
                   Write a Review
                 </button>
               </div>
             </div>
- 
+
             <div className="">
               {CustomerReviews.map((review, index) => {
                 return (

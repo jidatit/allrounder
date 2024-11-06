@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [password, setPassword] = useState("");
   const [zipCode, setZipCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -36,6 +38,8 @@ const SignupPage = () => {
         uid: user.uid,
         email: email,
         zipCode: zipCode,
+        firstName: firstName,
+        lastName: lastName,
         userType: "user",
         dateCreated: new Date(),
       });
@@ -75,8 +79,28 @@ const SignupPage = () => {
         <div className="w-full mt-8">
           <form
             onSubmit={handleSubmit}
-            className="w-full flex flex-col  justify-center items-center  "
+            className="w-full flex flex-col justify-center items-center  "
           >
+            <div className="w-[80vw] md:w-[40vw] max-w-[660px] flex md:flex-row flex-col justify-center gap-x-6">
+              {" "}
+              <input
+                type="text"
+                placeholder="First Name"
+                value={email}
+                onChange={(e) => setFirstName(e.target.value)}
+                required
+                className="custom-light bg-[#F5F4EC] w-[100%] md:w-[50%] placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black  my-3  outline-[#E55938]"
+              />
+              <input
+                type="text"
+                placeholder="Last Name"
+                value={email}
+                onChange={(e) => setLastName(e.target.value)}
+                required
+                className="custom-light bg-[#F5F4EC] w-[100%] md:w-[50%] placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black  my-3  outline-[#E55938]"
+              />
+            </div>
+
             <div>
               <input
                 type="email"

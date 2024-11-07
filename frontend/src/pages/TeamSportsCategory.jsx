@@ -30,6 +30,7 @@ import CategoryFilterDropdown from "../admin/components/CategoryDropdown";
 import ActivitiesMap from "../admin/components/ActivitiesMap";
 import ActivitySkeletonLoader from "../admin/components/ActivitySkeleton";
 import { IoStar, IoStarOutline } from "react-icons/io5";
+import { KeyRound } from "lucide-react";
 
 const createCustomIcon = (number) => {
   return L.divIcon({
@@ -383,6 +384,9 @@ const BlogCard = ({
   }, []);
 
   const handleInterestUpdate = async (userId, activityId) => {
+    if (!currentUser && !userId) {
+      toast.success("please Signin first to add activity");
+    }
     try {
       const userDocRef = doc(db, "users", userId);
       const userDocSnap = await getDoc(userDocRef);
@@ -509,8 +513,37 @@ const BlogCard = ({
                   onClick={(e) => {
                     e.stopPropagation();
                     e.preventDefault();
-                    console.log("activity added", docId, currentUser);
-                    handleInterestUpdate(currentUser.id, docId);
+                    if (currentUser) {
+                      handleInterestUpdate(currentUser.id, docId);
+                      console.log("activity added", docId, currentUser);
+                    } else {
+                      console.log("Please login or Signup to Continue");
+
+                      toast.info("Please login or Signup to Add to favorites", {
+                        style: {
+                          backgroundColor: "#fff", // Background color of the toast
+                          color: "#E55938", // Text color
+                          fontWeight: "bold", // Font weight
+                          fontSize: "16px", // Font size
+                          borderRadius: "8px", // Border radius
+                        },
+                        progressStyle: {
+                          backgroundColor: "#E55938", // Progress bar color
+                          opacity: 1,
+                        },
+                        icon: (
+                          <span
+                            style={{
+                              color: "#E55938",
+                              fontSize: "8px",
+                              marginRight: "20px",
+                            }}
+                          >
+                            <KeyRound />
+                          </span>
+                        ), // Custom icon with color
+                      });
+                    }
                   }}
                 >
                   <IoStarOutline />

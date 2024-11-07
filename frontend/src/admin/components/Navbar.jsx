@@ -15,12 +15,12 @@ const Navbar = () => {
           </div>
           <div className="hidden smd:flex items-center smd:w-[60%] smd:justify-end p-2">
             <img
-              className="h-16 w-16 rounded-xl"
-              src={"/Rectangle 1393.png"}
+              className="h-16 w-16 rounded-full"
+              src={currentUser.profilePicture || "/avatar-default.jpg "}
               alt="User avatar"
             />
             <div className="flex flex-col gap-y-2 justify-center">
-              <span className="ml-2 text-sm custom-medium text-orange-500">
+              <span className="ml-2 text-sm custom-medium text-[#E55938]">
                 {currentUser.firstName
                   ? currentUser.firstName
                   : currentUser.email}

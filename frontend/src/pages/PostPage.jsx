@@ -33,6 +33,7 @@ import useSliderSettingsActivity from "../admin/components/SliderSettingsActivit
 import MapModal from "../admin/components/MapModal";
 import ShareButton from "../admin/components/SharedButton";
 import { useAuth } from "../context/authContext";
+import { KeyRound, ShieldOff } from "lucide-react";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -230,6 +231,9 @@ const PostPage = () => {
   };
 
   const handleInterestUpdate = async (userId, activityId) => {
+    if (!currentUser && !userId) {
+      toast.success("please Signin first to add activity");
+    }
     try {
       const userDocRef = doc(db, "users", userId);
       const userDocSnap = await getDoc(userDocRef);
@@ -306,14 +310,18 @@ const PostPage = () => {
 
   useEffect(() => {
     const checkInterest = async () => {
-      const isInterestAdded = await checkInterestExists(
-        currentUser.id,
-        formData.documentId
-      );
-      setCheckingInterest(isInterestAdded);
-      if (isInterestAdded) {
-        setInterested(isInterestAdded);
-        console.log("check Interested from function", isInterestAdded);
+      if (currentUser) {
+        const isInterestAdded = await checkInterestExists(
+          currentUser.id,
+          formData.documentId
+        );
+        setCheckingInterest(isInterestAdded);
+        if (isInterestAdded) {
+          setInterested(isInterestAdded);
+          console.log("check Interested from function", isInterestAdded);
+        } else {
+          return;
+        }
       }
     };
 
@@ -582,7 +590,7 @@ const PostPage = () => {
                 className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1 cursor-pointer"
                 onClick={() => {
                   console.log("Clicked");
-                  console.log(currentUser.id);
+                  // console.log(currentUser.id);
                   console.log(formData.documentId);
                   console.log("isInterested", isInterested);
 
@@ -590,8 +598,36 @@ const PostPage = () => {
                     removeInterest(currentUser.id, formData.documentId);
                     console.log("remove interested");
                   } else {
-                    handleInterestUpdate(currentUser.id, formData.documentId);
-                    console.log("added Interest");
+                    if (currentUser) {
+                      handleInterestUpdate(currentUser.id, formData.documentId);
+                    } else {
+                      console.log("Please login or Signup to Continue");
+
+                      toast.info("Please login or Signup to Add to favorites", {
+                        style: {
+                          backgroundColor: "#fff", // Background color of the toast
+                          color: "#E55938", // Text color
+                          fontWeight: "bold", // Font weight
+                          fontSize: "16px", // Font size
+                          borderRadius: "8px", // Border radius
+                        },
+                        progressStyle: {
+                          backgroundColor: "#E55938", // Progress bar color
+                          opacity: 1,
+                        },
+                        icon: (
+                          <span
+                            style={{
+                              color: "#E55938",
+                              fontSize: "8px",
+                              marginRight: "20px",
+                            }}
+                          >
+                            <KeyRound />
+                          </span>
+                        ), // Custom icon with color
+                      });
+                    }
                   }
                 }}
               >
@@ -849,7 +885,7 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          reviews={activity.reviews || 584}
+                          // reviews={activity.reviews || 584}
                           rating={activity.rating || 4.5}
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]}

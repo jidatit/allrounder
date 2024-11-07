@@ -337,7 +337,7 @@ const Homepage = () => {
                         duration={activity.duration || "Duration 2 hours"}
                         date={activity.date || "2nd July – 2nd August"}
                         ageRange={activity.ageRange || "6 – 12 Years"}
-                        reviews={activity.reviews || 584}
+                        // reviews={activity.reviews || 584}
                         rating={activity.rating || 4.5}
                         price={activity.price || 35.0}
                         imageUrl={activity.imageUrls?.[0]}

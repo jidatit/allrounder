@@ -400,7 +400,10 @@ const EditActivityComponent = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div role="status">
+        <div
+          role="status"
+          className="flex flex-col justify-center items-center"
+        >
           <svg
             aria-hidden="true"
             className="inline w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gray-600 dark:fill-gray-300"
@@ -418,6 +421,9 @@ const EditActivityComponent = () => {
             />
           </svg>
           <span className="sr-only">Loading...</span>
+          <h1 className="bg-orange-600 text-white rounded-xl px-4 py-2.5 shadow-md font-radios text-xl mt-4 ">
+            Editing You Activity Hold On For a bit...{" "}
+          </h1>
         </div>
       </div>
     );

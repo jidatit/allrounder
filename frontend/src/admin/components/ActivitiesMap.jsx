@@ -128,7 +128,15 @@ const ActivitiesMap = ({ activities, featureActivityParam }) => {
   return (
     <div className="h-full w-full relative">
       {isLoading ? (
-        <MapSkeletonLoader />
+        <>
+          <div className="flex flex-col gap-y-3 items-center justify-center h-screen loading-spinner">
+            {/* Spinner */}
+            <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-gray-900/50 animate-spin"></div>
+            <h1 className="font-radios text-xl text-orange-600">
+              Loading the Map....
+            </h1>
+          </div>
+        </>
       ) : (
         <MapContainer
           ref={mapRef}

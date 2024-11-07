@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-
+import React, { useState, useEffect, useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
 import { format } from "date-fns";
 import {
   arrayUnion,
@@ -9,6 +9,7 @@ import {
   getDocs,
   onSnapshot,
   query,
+  setDoc,
   updateDoc,
   where,
 } from "firebase/firestore";
@@ -16,6 +17,7 @@ import { db } from "../config/firebase";
 import { Card, CardContent } from "@mui/material";
 import { IoStarHalfSharp, IoStarSharp } from "react-icons/io5";
 import ReviewsList from "../admin/components/ReviewList";
+import { toast } from "react-toastify";
 
 const ReviewSection = ({ currentUser, activityId, avatar }) => {
   const [showReviewForm, setShowReviewForm] = useState(false);
@@ -46,9 +48,11 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
       const userData = userDoc.data();
       const firstName = userData.firstName || "";
       const lastName = userData.lastName || "";
-      const userProfileImage = userData.profileImage || userData.photoURL || ""; // Assuming profile image field name
+      const userProfileImage =
+        userData.profilePicture || userData.photoURL || ""; // Assuming profile image field name
 
       const newReview = {
+        id: uuidv4(), // Generate a unique ID for each review
         name: `${firstName} ${lastName}`.trim(),
         rating,
         description,
@@ -60,6 +64,8 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
 
       // Find the activity document
       const activitiesRef = collection(db, "activities");
+      const featuredActivitiesRef = collection(db, "featuredActivities");
+
       const qActivity = query(
         activitiesRef,
         where("activityId", "==", Number(activityId))
@@ -68,10 +74,34 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
 
       if (!activitySnapshot.empty) {
         const activityDoc = activitySnapshot.docs[0];
-        // Update the reviews array
+
+        // Update the reviews array in `activities` collection
         await updateDoc(doc(db, "activities", activityDoc.id), {
           reviews: arrayUnion(newReview),
         });
+
+        // Update the reviews array in `featuredActivities` collection
+        const qFeaturedActivity = query(
+          featuredActivitiesRef,
+          where("activityId", "==", Number(activityId))
+        );
+        const featuredActivitySnapshot = await getDocs(qFeaturedActivity);
+
+        if (!featuredActivitySnapshot.empty) {
+          const featuredActivityDoc = featuredActivitySnapshot.docs[0];
+          await updateDoc(
+            doc(db, "featuredActivities", featuredActivityDoc.id),
+            {
+              reviews: arrayUnion(newReview),
+            }
+          );
+        } else {
+          // If the document doesn't exist in `featuredActivities`, create it
+          await setDoc(doc(db, "featuredActivities", activityDoc.id), {
+            ...activityDoc.data(),
+            reviews: arrayUnion(newReview),
+          });
+        }
 
         // Reset form
         setDescription("");
@@ -135,7 +165,7 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
   }, [activityId]);
 
   // Get displayed reviews based on showAllReviews state
-  const displayedReviews = showAllReviews ? reviews : reviews.slice(0, 3);
+  const displayedReviews = showAllReviews ? reviews : reviews;
   const calculateAverageRating = (reviews) => {
     if (reviews.length === 0) return 0;
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
@@ -155,7 +185,7 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
             <div className="flex items-center gap-2">
               <div>
                 <p className="custom-bold text-2xl md:text-4xl lg:text-5xl mb-5">
-                  {averageRating}
+                  {averageRating.toFixed(1)}
                 </p>
               </div>
               <div>
@@ -193,7 +223,13 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
           {!showReviewForm ? (
             <div className="flex justify-end items-end w-full">
               <button
-                onClick={() => setShowReviewForm(true)}
+                onClick={() => {
+                  if (currentUser && currentUser.userType !== "admin") {
+                    setShowReviewForm(true);
+                  } else {
+                    toast.error("You need to be logged in to write a review.");
+                  }
+                }}
                 className="w-[110px] h-[33px] md:w-[137px] lg:w-[181px] lg:h-[48px] bg-[#E55938] rounded-3xl text-xs md:text-sm lg:text-lg text-white custom-semibold flex items-center justify-center"
               >
                 Write a Review
@@ -203,19 +239,13 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
             <Card className="w-full mt-4 p-4 ">
               <CardContent>
                 <div className="flex flex-col gap-4">
-                  <textarea
-                    placeholder="Write your review here..."
-                    className="min-h-[150px] p-4 border-1 border-gray-300 rounded-xl"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
                   <div className="flex items-center gap-2">
                     <p className="text-sm text-gray-600">Your Rating:</p>
                     <div className="flex">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <IoStarSharp
                           key={star}
-                          className={`text-2xl cursor-pointer ${
+                          className={`text-4xl cursor-pointer ${
                             star <= (hoverRating || rating)
                               ? "text-[#FFA432]"
                               : "text-[#CFD9DE]"
@@ -227,7 +257,12 @@ const ReviewSection = ({ currentUser, activityId, avatar }) => {
                       ))}
                     </div>
                   </div>
-
+                  <textarea
+                    placeholder="Write your review here..."
+                    className="min-h-[150px] p-4 border-1 border-gray-300 rounded-xl"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                  />
                   <div className="flex justify-end gap-2">
                     <button
                       onClick={() => setShowReviewForm(false)}

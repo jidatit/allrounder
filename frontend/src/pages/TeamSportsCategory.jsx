@@ -43,6 +43,7 @@ const TeamSportsCategory = () => {
   const [activities, setActivities] = useState([]);
   const { name } = useParams(); // Get category from URL params
   const [loading, setLoading] = useState(true);
+  const [loading2, setLoading2] = useState(true);
   const [locationMap, setLocationMap] = useState([]);
   const navigate = useNavigate();
   // Fetch all activities initially
@@ -81,23 +82,23 @@ const TeamSportsCategory = () => {
         setFilteredActivities(initialFiltered);
 
         // Update map locations
-        await updateMapLocations(initialFiltered);
+        // await updateMapLocations(initialFiltered);
         setLoading(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
-        toast.error("Error fetching activities");
+
         setLoading(false);
       }
     };
 
     fetchAllActivities();
   }, []);
-  // Single useEffect to fetch all activities
+
   useEffect(() => {
     const fetchActivities = async () => {
       try {
-        setLoading(true);
-        // Always fetch all activities
+        setLoading2(true);
+
         const activitiesRef = collection(db, "activities");
         const querySnapshot = await getDocs(activitiesRef);
         const activitiesData = querySnapshot.docs.map((doc) => ({
@@ -128,16 +129,14 @@ const TeamSportsCategory = () => {
 
         const locations = await Promise.all(locationPromises);
         setLocationMap(locations);
-        setLoading(false);
+        setLoading2(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
-        toast.error("Error fetching activities");
-        setLoading(false);
       }
     };
 
     fetchActivities();
-  }, [name]); // Only depend on name parameter
+  }, []); // Only depend on name parameter
 
   const deleteFeatured = async (activityId) => {
     try {
@@ -210,6 +209,7 @@ const TeamSportsCategory = () => {
 
   const handleFilterChange = async (selectedCategories) => {
     setLoading(true);
+    console.log("fethicng");
     try {
       let filtered;
 
@@ -222,10 +222,11 @@ const TeamSportsCategory = () => {
           selectedCategories.includes(activity.category)
         );
       }
-
+      setLoading(false);
       setFilteredActivities(filtered);
-
+      setLoading(false);
       // Update map
+
       const provider = new OpenStreetMapProvider();
       const locationPromises = filtered.map(async (activity) => {
         const results = await provider.search({ query: activity.location });
@@ -241,9 +242,7 @@ const TeamSportsCategory = () => {
       setLocationMap(newLocations);
     } catch (error) {
       console.error("Error updating filters:", error);
-      toast.error("Error updating filters");
     }
-    setLoading(false);
   };
   let featureActivityParam = "simpleActivity";
   return (
@@ -270,7 +269,7 @@ const TeamSportsCategory = () => {
             {loading ? (
               <ActivitySkeletonLoader />
             ) : (
-              <div className="lg:w-[70%] xxl:w-[60%] h-[860px] overflow-auto scrollbar-custom">
+              <div className="lg:w-[70%] xxl:w-[60%] h-[860px] overflow-auto p-2 scrollbar-custom">
                 {filteredActivities.length === 0 ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <p className="text-2xl">No activities found</p>
@@ -378,9 +377,9 @@ const BlogCard = ({
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
-      className="flex flex-col items-start gap-3 sssm:gap-5 justify-start p-2 sm:p-3 lg:p-4 w-full"
+      className="flex flex-col items-start gap-3 sssm:gap-5 rounded-lg shadow-lg justify-start p-2 sm:p-3 lg:p-2 mb-6 w-full"
     >
-      <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full">
+      <div className="flex flex-col bg-white overflow-hidden w-full">
         <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4">
           {/* Image container */}
           <div className="w-full lg:w-[40%] smd:mr-4 h-[200px] sssm:h-[250px] smd:h-[30vh]">
@@ -395,34 +394,58 @@ const BlogCard = ({
           <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3">
             <div>
               {/* Title and Featured button */}
-              <div className="flex flex-col ssm:flex-row items-start ssm:items-center justify-between w-full gap-2">
+              <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between w-full xl:gap-2">
                 <h3 className="text-lg sssm:text-xl font-semibold mb-2">
-                  {name.length > 55 ? `${name.slice(0, 55)}...` : name}
+                  {name.length > 40 ? `${name.slice(0, 40)}...` : name}
                 </h3>
                 {featuredActivities.some(
                   (featured) => featured.activityId === activityIdParam
                 ) && (
-                  <button
-                    onClick={(e) => {
-                      e.preventDefault();
-                      handleAddToFeature();
-                    }}
-                    className="flex items-center bg-[#E55938] text-white rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
-                  >
-                    <MdStarRate className="mr-1" />
-                    Featured Activity
-                  </button>
+                  <div className="xl:flex xl:justify-start w-full xl:w-auto hidden">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToFeature();
+                      }}
+                      className="flex items-center bg-[#E55938] text-white mb-2 rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
+                    >
+                      <MdStarRate className="mr-1 text-lg" />{" "}
+                      {/* Apply a fixed size here */}
+                      Featured Activity
+                    </button>
+                  </div>
+                )}
+              </div>
+              <div className="flex flex-col ssm:flex-row justify-between w-full ">
+                <div className="flex flex-col ">
+                  <p className="text-gray-600 mb-2 text-sm sssm:text-base">
+                    {address}
+                  </p>
+                  <p className="flex items-center text-gray-600 text-sm sssm:text-base">
+                    <LuPhone className="mr-2" />
+                    {contact}
+                  </p>
+                </div>
+                {featuredActivities.some(
+                  (featured) => featured.activityId === activityIdParam
+                ) && (
+                  <div className="flex xl:justify-start justify-end w-full xl:w-auto xl:hidden">
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleAddToFeature();
+                      }}
+                      className="flex items-center  bg-[#E55938] text-white rounded-full px-3 py-1 lg:px-2.5 xl::px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base w-full ssm:w-auto justify-center ssm:justify-start"
+                    >
+                      <MdStarRate className="mr-1 text-lg" />{" "}
+                      {/* Apply a fixed size here */}
+                      Featured Activity
+                    </button>
+                  </div>
                 )}
               </div>
 
               {/* Address and Contact */}
-              <p className="text-gray-600 mb-2 text-sm sssm:text-base">
-                {address}
-              </p>
-              <p className="flex items-center text-gray-600 text-sm sssm:text-base">
-                <LuPhone className="mr-2" />
-                {contact}
-              </p>
             </div>
 
             {/* Bottom buttons */}
@@ -449,7 +472,7 @@ const BlogCard = ({
                   {featuredActivities.some(
                     (featured) => featured.activityId === activityIdParam
                   )
-                    ? "Remove from Featured"
+                    ? "Remove Featured"
                     : "Add to Feature"}
                 </button>
               ) : (

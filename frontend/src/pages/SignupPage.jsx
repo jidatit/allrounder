@@ -86,7 +86,7 @@ const SignupPage = () => {
               <input
                 type="text"
                 placeholder="First Name"
-                value={email}
+                value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
                 required
                 className="custom-light bg-[#F5F4EC] w-[100%] md:w-[50%] placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black  my-3  outline-[#E55938]"
@@ -94,7 +94,7 @@ const SignupPage = () => {
               <input
                 type="text"
                 placeholder="Last Name"
-                value={email}
+                value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
                 required
                 className="custom-light bg-[#F5F4EC] w-[100%] md:w-[50%] placeholder:text-black placeholder:custom-light placeholder:text-sm p-3 md:p-4 rounded-full text-black  my-3  outline-[#E55938]"

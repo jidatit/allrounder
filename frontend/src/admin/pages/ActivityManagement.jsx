@@ -219,9 +219,9 @@ const BlogCard = ({
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
-      className="flex flex-col items-start gap-3 sssm:gap-5 justify-start p-2 sm:p-3 lg:p-4 w-full"
+      className="flex flex-col items-start gap-3 mt-4 sssm:gap-5 rounded-lg justify-start shadow-lg p-2 sm:p-3 lg:p-2 w-full"
     >
-      <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full">
+      <div className="flex flex-col bg-white rounded-lg overflow-hidden w-full">
         <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4">
           {/* Image container */}
           <div className="w-full lg:w-[40%] smd:mr-4 h-[200px] sssm:h-[250px] smd:h-[30vh]">
@@ -238,7 +238,7 @@ const BlogCard = ({
               {/* Title and Featured button */}
               <div className="flex flex-col ssm:flex-row items-start ssm:items-center justify-between w-full gap-2">
                 <h3 className="text-lg sssm:text-xl font-semibold mb-2">
-                  {name.length > 65 ? `${name.slice(0, 65)}...` : name}
+                  {name.length > 45 ? `${name.slice(0, 45)}...` : name}
                 </h3>
                 {featuredActivities.some(
                   (featured) => featured.activityId === activityIdParam
@@ -250,7 +250,8 @@ const BlogCard = ({
                     }}
                     className="flex items-center bg-[#E55938] text-white rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
                   >
-                    <MdStarRate className="mr-1" />
+                    <MdStarRate className="mr-1 text-lg" />{" "}
+                    {/* Apply a fixed size here */}
                     Featured Activity
                   </button>
                 )}

@@ -318,9 +318,7 @@ const Homepage = () => {
       <section className="h-full w-full mb-16 mt-10">
         <div className="h-full px-4 sm:px-4 md:pt-20 max-w-[1440px] ssm:max-w-[1540px] justify-center items-center lg:items-start mx-auto flex flex-col gap-2 md:gap-3 smd:mt-0 mt-20 lg:gap-5 ">
           {featuredActivities?.length === 0 ? (
-            <div className="w-full h-full flex items-center justify-center">
-              <p className="text-2xl">No Featured activities </p>
-            </div>
+            ""
           ) : (
             <>
               <h2 className="custom-bold text-2xl ml-10 md:text-4xl lg:text-5xl mb-10">

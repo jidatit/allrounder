@@ -209,9 +209,9 @@ const BlogCard = ({
   ) : (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
-      className="flex flex-col items-start gap-5 justify-start p-3 lg:p-4 w-full"
+      className="flex flex-col items-start gap-5 rounded-lg shadow-lg mt-4 justify-start p-3 lg:p-2 w-full"
     >
-      <div className="flex flex-col bg-white rounded-lg shadow-lg overflow-hidden w-full">
+      <div className="flex flex-col bg-white  overflow-hidden w-full">
         <div className="flex p-4">
           <div className="w-[40%] mr-4 h-[30vh]">
             <img

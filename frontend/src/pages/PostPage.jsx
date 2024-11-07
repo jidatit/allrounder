@@ -1,5 +1,10 @@
 import React, { useEffect, useRef, useState } from "react";
-import { IoShareOutline, IoStarOutline, IoStarSharp } from "react-icons/io5";
+import {
+  IoShareOutline,
+  IoStarHalfSharp,
+  IoStarOutline,
+  IoStarSharp,
+} from "react-icons/io5";
 import FeaturedCard from "../UI Components/FeaturedCard";
 import { PiCopy } from "react-icons/pi";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
@@ -7,7 +12,13 @@ import Slider from "react-slick";
 import { FaChevronLeft, FaChevronRight } from "react-icons/fa";
 import { useParams } from "react-router-dom";
 import { toast } from "react-toastify";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import {
+  collection,
+  getDocs,
+  onSnapshot,
+  query,
+  where,
+} from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
@@ -38,6 +49,7 @@ const PostPage = () => {
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
   const { currentUser } = useAuth();
+  const [singleActivity, setSingleActivity] = useState([]);
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -133,62 +145,76 @@ const PostPage = () => {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchActivityData = async () => {
-      try {
-        setLoading(true);
-        const activitiesRef = collection(db, "activities");
-        const q = query(
-          activitiesRef,
-          where("activityId", "==", Number(activityIdParam))
-        );
-        const querySnapshot = await getDocs(q);
+    const fetchActivityData = () => {
+      if (!activityIdParam) return;
 
-        if (querySnapshot.empty) {
-          throw new Error("Activity not found");
+      setLoading(true);
+
+      const activitiesRef = collection(db, "activities");
+      const q = query(
+        activitiesRef,
+        where("activityId", "==", Number(activityIdParam))
+      );
+
+      // Set up the real-time listener using onSnapshot
+      const unsubscribe = onSnapshot(
+        q,
+        (querySnapshot) => {
+          if (querySnapshot.empty) {
+            console.error("Activity not found");
+            toast.error("Activity not found");
+            setLoading(false);
+            return;
+          }
+
+          const activityDoc = querySnapshot.docs[0];
+          const activityData = activityDoc.data();
+
+          setSingleActivity(activityData);
+
+          // Update formData with fetched data
+          setFormData({
+            ...formData,
+            activityId: activityData.activityId,
+            imagesPreviews: activityData.imageUrls || Array(3).fill(null),
+            title: activityData.title || "",
+            description: activityData.description || "",
+            details: activityData.details?.length ? activityData.details : [""],
+            location: activityData.location || "",
+            hashtags: activityData.hashtags?.length
+              ? activityData.hashtags
+              : [""],
+            category: activityData.category || "",
+            showGoogleMap: activityData.showGoogleMap || false,
+            host: {
+              name: activityData.host?.name || "",
+              phone: activityData.host?.phone || "",
+              email: activityData.host?.email || "",
+              about: activityData.host?.about || "",
+              website: activityData.host?.website || "",
+              profilePic: null,
+              profilePicPreview: activityData.host?.profilePicUrl || null,
+            },
+            startingHours: activityData.startingHours || "",
+            endingHours: activityData.endingHours || "",
+            documentId: activityDoc.id, // Store the document ID for updates
+          });
+
+          fetchRelatedActivities(activityData.category); // Fetch related activities
+          setLoading(false);
+        },
+        (error) => {
+          console.error("Error fetching activity:", error);
+          toast.error("Failed to load activity data");
+          setLoading(false);
         }
+      );
 
-        const activityDoc = querySnapshot.docs[0];
-        const activityData = activityDoc.data();
-
-        // Update formData with fetched data
-        setFormData({
-          ...formData,
-          activityId: activityData.activityId,
-          imagesPreviews: activityData.imageUrls || Array(3).fill(null),
-          title: activityData.title || "",
-          description: activityData.description || "",
-          details: activityData.details?.length ? activityData.details : [""],
-          location: activityData.location || "",
-          hashtags: activityData.hashtags?.length
-            ? activityData.hashtags
-            : [""],
-          category: activityData.category || "",
-          showGoogleMap: activityData.showGoogleMap || false,
-          host: {
-            name: activityData.host?.name || "",
-            phone: activityData.host?.phone || "",
-            email: activityData.host?.email || "",
-            about: activityData.host?.about || "",
-            website: activityData.host?.website || "",
-            profilePic: null,
-            profilePicPreview: activityData.host?.profilePicUrl || null,
-          },
-          startingHours: activityData.startingHours || "",
-          endingHours: activityData.endingHours || "",
-          documentId: activityDoc.id, // Store the document ID for updates
-        });
-        await fetchRelatedActivities(activityData.category);
-      } catch (error) {
-        console.error("Error fetching activity:", error);
-        toast.error("Failed to load activity data");
-      } finally {
-        setLoading(false);
-      }
+      // Cleanup function to unsubscribe from the listener when the component unmounts
+      return () => unsubscribe();
     };
 
-    if (activityIdParam) {
-      fetchActivityData();
-    }
+    fetchActivityData();
   }, [activityIdParam]);
   const fetchRelatedActivities = async (category) => {
     try {
@@ -209,21 +235,9 @@ const PostPage = () => {
       toast.error("Failed to load related activities");
     }
   };
-  const locations = [
-    { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
-    { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
-    { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
-  ];
+
   const currentUrl = window.location.href;
   const [copied, setCopied] = useState(false);
-  const tags = ["Dance", "Ballet", "Soccer", "Team Sports"];
-  const activityDetails = [
-    "Vivamus elementum semper nisi. Aenean vulputate eleifend tellus.",
-    "Vivamus elementum semper nisi.",
-    "Vivamus elementum semper nisi. Aenean vulputate eleifend tellus.",
-    "Vivamus elementum semper nisi. Aenean tellus.",
-    "Vivamus elementum semper nisi. Aenean vulputate eleifend tellus.",
-  ];
 
   const copyToClipboard = () => {
     navigator.clipboard.writeText(currentUrl).then(() => {
@@ -232,124 +246,26 @@ const PostPage = () => {
     });
   };
 
-  const activityCards = [
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-2.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-3.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-4.png",
-      sponsored: true,
-    },
-    {
-      title: "Vivamus elementum semper nisi. Aenean dolor",
-      duration: "Duration 2 hours",
-      date: "2nd July – 2nd August",
-      ageRange: "6 – 12 Years",
-      reviews: 584,
-      rating: 4.5,
-      price: 35.0,
-      imageUrl: "/Featured/card-5.png",
-      sponsored: true,
-    },
-  ];
-
-  const CustomerReviews = [
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-
-      rating: 4, // Rating out of 5
-      title: "Lorem Ipsum Dolor Sit Amet, Consectetuer Adipiscing Elit.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-      rating: 4,
-      title: "Aenean Commodo Ligula Eget Dolor.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-    {
-      name: "Alex Allan",
-      avatarUrl: "/avatar.jpeg",
-
-      rating: 4, // Rating out of 5
-      title: "Cum Sociis Natoque Penatibus Et Magnis Dis Parturient Montese.",
-      description: `Lorem ipsum dolor sit amet, consectetuer adipiscing elit. Aenean commodo ligula eget dolor. 
-        Aenean massa. Cum sociis natoque penatibus et magnis dis parturient montes, nascetur ridiculus mus. 
-        Donec quam felis, ultricies nec, pellentesque eu, pretium quis, sem. Nulla consequat massa quis enim. 
-        Lorem ipsum dolor sit ametnin.`,
-      date: "28 August 2024",
-    },
-  ];
-
-  const rating = 3;
-
   let sliderRef = useRef(null);
   let sliderRef2 = useRef(null);
-  const next2 = () => {
+  const next = () => {
     if (sliderRef.current) {
       sliderRef.current.slickNext();
     }
   };
 
-  const previous2 = () => {
+  const previous = () => {
     if (sliderRef.current) {
       sliderRef.current.slickPrev();
     }
   };
-  const next = () => {
+  const next2 = () => {
     if (sliderRef2.current) {
       sliderRef2.current.slickNext();
     }
   };
 
-  const previous = () => {
+  const previous2 = () => {
     if (sliderRef2.current) {
       sliderRef2.current.slickPrev();
     }
@@ -546,6 +462,16 @@ const PostPage = () => {
 
     return baseClasses[totalItems] || baseClasses.default;
   };
+  const calculateAverageRating = (reviews) => {
+    if (reviews?.length === 0) return 0;
+    const totalRating = reviews?.reduce(
+      (sum, review) => sum + review?.rating,
+      0
+    );
+    return totalRating / reviews?.length;
+  };
+
+  const averageRating = calculateAverageRating(singleActivity.reviews); // Decimal rating (e.g., 3.5)
   return (
     <main className="h-full w-full ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
@@ -568,17 +494,47 @@ const PostPage = () => {
               </div>
               <ShareButton />
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
-                <div className="flex items-center">
-                  {[...Array(5)].map((_, index) => (
-                    <IoStarSharp
-                      key={index}
-                      className={`text-[#FFA432] ${
-                        index < rating ? "" : "text-[#CFD9DE]"
-                      }`}
-                    />
-                  ))}
+                <div className="flex flex-col">
+                  <div className="flex">
+                    <div className="flex items-center text-4xl -mt-1">
+                      {[...Array(5)].map((_, index) => {
+                        if (index < Math.floor(averageRating)) {
+                          return (
+                            <IoStarSharp
+                              key={index}
+                              className="text-[#FFA432]"
+                            />
+                          );
+                        } else if (
+                          index === Math.floor(averageRating) &&
+                          averageRating % 1 >= 0.5
+                        ) {
+                          return (
+                            <IoStarHalfSharp
+                              key={index}
+                              className="text-[#FFA432]"
+                            />
+                          );
+                        } else {
+                          return (
+                            <IoStarSharp
+                              key={index}
+                              className="text-[#CFD9DE]"
+                            />
+                          );
+                        }
+                      })}
+                    </div>
+                  </div>
                 </div>
-                (584 reviews)
+                <span>
+                  {" "}
+                  (
+                  {singleActivity.reviews?.length
+                    ? singleActivity.reviews?.length
+                    : 0}
+                  reviews)
+                </span>
               </div>
             </div>
           </div>
@@ -757,13 +713,12 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          // reviews={activity.reviews || 584}
-                          rating={activity.rating || 4.5}
+                          reviews={activity.reviews} // Pass the full reviews array
                           price={activity.price || 35.0}
-                          imageUrl={activity.imageUrls?.[0]} // Assuming the first image is used
+                          imageUrl={activity.imageUrls?.[0]}
                           sponsored={activity.sponsored}
                           activityId={activity.activityId}
-                          count={relatedActivities.length}
+                          count={featuredActivities.length}
                         />
                       </div>
                     ))}
@@ -809,12 +764,12 @@ const PostPage = () => {
                           duration={activity.duration || "Duration 2 hours"}
                           date={activity.date || "2nd July – 2nd August"}
                           ageRange={activity.ageRange || "6 – 12 Years"}
-                          // reviews={activity.reviews || 584}
-                          rating={activity.rating || 4.5}
+                          reviews={activity.reviews} // Pass the full reviews array
                           price={activity.price || 35.0}
                           imageUrl={activity.imageUrls?.[0]}
                           sponsored={activity.sponsored}
                           activityId={activity.activityId}
+                          count={featuredActivities.length}
                         />
                       </div>
                     ))}
@@ -823,13 +778,13 @@ const PostPage = () => {
                   <>
                     <button
                       className="button absolute smd:-ml-6 top-[48%] left-2 bg-[#E55938] text-white w-6 h-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                      onClick={previous}
+                      onClick={previous2}
                     >
                       <FaChevronLeft />
                     </button>
                     <button
                       className="button absolute top-[48%] smd:-mr-6 right-2 bg-[#E55938] text-white h-6 w-6 lg:w-8 lg:h-8 rounded-full custom-shadow flex items-center justify-center text-sm lg:text-lg"
-                      onClick={next}
+                      onClick={next2}
                     >
                       <FaChevronRight />
                     </button>

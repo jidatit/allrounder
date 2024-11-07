@@ -121,14 +121,30 @@ const CreateActivity = () => {
     });
   };
 
+  // const handleHashtagChange = (index, value) => {
+  //   const formattedValue = value.startsWith("#")
+  //   ? "#" + value.replace(/^#+/, '')
+  //   : value;
+  //   const newHashtags = [...formData.hashtags];
+  //   newHashtags[index] = value;
+  //   setFormData({
+  //     ...formData,
+  //     hashtags: newHashtags,
+  //   });
+  // };
+  // Function to handle hashtag input changes
   const handleHashtagChange = (index, value) => {
+    // Remove extra '#' characters, allowing only one at the start
+    const formattedValue = value.startsWith("#")
+      ? "#" + value.replace(/^#+/, "")
+      : value;
+
+    // Update the hashtag in formData
     const newHashtags = [...formData.hashtags];
-    newHashtags[index] = value;
-    setFormData({
-      ...formData,
-      hashtags: newHashtags,
-    });
+    newHashtags[index] = formattedValue;
+    setFormData({ ...formData, hashtags: newHashtags });
   };
+
   const uploadImages = async (images, activityId) => {
     const uploadedUrls = [];
     console.log("images", images);

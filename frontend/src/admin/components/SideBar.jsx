@@ -18,9 +18,11 @@ const SideBar = ({ isSidebarExpanded }) => {
     >
       <div className="flex flex-col items-center justify-start w-full h-full px-5 py-3 gap-y-4 smd:gap-y-10">
         <div className="flex w-full">
-          <h1 className="w-full p-2 smd:p-3 text-lg smd:text-2xl font-bold text-black bg-white rounded-lg">
-            Logo
-          </h1>
+          <Link to={"/"}>
+            <h1 className="w-full p-2 smd:p-3 text-lg smd:text-2xl font-bold text-black bg-white rounded-lg">
+              Logo
+            </h1>
+          </Link>
         </div>
 
         <div className="flex flex-col w-full gap-y-4">

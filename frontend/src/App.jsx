@@ -23,6 +23,7 @@ import ActivityManagement from "./admin/pages/ActivityManagement";
 import CreateActivity from "./admin/components/AddActivity";
 import EditActivityComponent from "./admin/components/EditActivity";
 import FeaturedActivities from "./admin/pages/FeaturedActivities";
+import MyInterests from "./admin/pages/MyInterests";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -106,6 +107,13 @@ function App() {
                   index
                   element={
                     currentUser ? <UserDashboard /> : <Navigate to="/login" />
+                  }
+                />
+
+                <Route
+                  path="my-interests"
+                  element={
+                    currentUser ? <MyInterests /> : <Navigate to="/login" />
                   }
                 />
               </Route>

@@ -10,12 +10,17 @@ import { MdDeleteOutline, MdStarRate } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import {
   addDoc,
+  arrayRemove,
+  arrayUnion,
   collection,
   deleteDoc,
   doc,
+  getDoc,
   getDocs,
   onSnapshot,
   query,
+  setDoc,
+  updateDoc,
   where,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
@@ -24,6 +29,8 @@ import { useAuth } from "../context/authContext";
 import CategoryFilterDropdown from "../admin/components/CategoryDropdown";
 import ActivitiesMap from "../admin/components/ActivitiesMap";
 import ActivitySkeletonLoader from "../admin/components/ActivitySkeleton";
+import { IoStar, IoStarOutline } from "react-icons/io5";
+import { KeyRound } from "lucide-react";
 
 const createCustomIcon = (number) => {
   return L.divIcon({
@@ -35,11 +42,11 @@ const createCustomIcon = (number) => {
 };
 
 const TeamSportsCategory = () => {
-  const locations = [
-    { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
-    { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
-    { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
-  ];
+  // const locations = [
+  //   { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
+  //   { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
+  //   { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
+  // ];
   const [activities, setActivities] = useState([]);
   const { name } = useParams(); // Get category from URL params
   const [loading, setLoading] = useState(true);
@@ -132,6 +139,8 @@ const TeamSportsCategory = () => {
         setLoading2(false);
       } catch (error) {
         console.error("Error fetching activities:", error);
+
+        setLoading(false);
       }
     };
 
@@ -247,7 +256,7 @@ const TeamSportsCategory = () => {
   let featureActivityParam = "simpleActivity";
   return (
     <main className="h-full w-screen">
-      <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5">
+      <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5 ">
         <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl">
             {name ? `${name} Activities` : "All Activities"}
@@ -321,7 +330,8 @@ const BlogCard = ({
   deleteFeatured,
 }) => {
   const { currentUser } = useAuth();
-  console.lo;
+  const [isInterested, setInterested] = useState(false);
+
   const handleDelete = async () => {
     // Add delete functionality here
     if (window.confirm("Are you sure you want to delete this activity?")) {
@@ -374,6 +384,96 @@ const BlogCard = ({
     return () => unsubscribe();
   }, []);
 
+  const handleInterestUpdate = async (userId, activityId) => {
+    if (!currentUser && !userId) {
+      toast.success("please Signin first to add activity");
+    }
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        // Document exists, check for interests field
+        if (userDocSnap.data().interests) {
+          // Interests field exists, update it by pushing the new activityId
+          await updateDoc(userDocRef, {
+            interests: arrayUnion(activityId),
+          });
+        } else {
+          // Interests field does not exist, create it with activityId in array
+          await setDoc(
+            userDocRef,
+            {
+              interests: [activityId],
+            },
+            { merge: true }
+          );
+        }
+      } else {
+        // Document does not exist, create it with the interests field
+        await setDoc(userDocRef, {
+          interests: [activityId],
+        });
+      }
+      toast.success("Activity added to Interested");
+      setInterested(true);
+    } catch (error) {
+      console.error("Error updating interests: ", error);
+      toast.error("Error adding Interest", error);
+    }
+  };
+
+  const removeInterest = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+
+      await updateDoc(userDocRef, {
+        interests: arrayRemove(activityId),
+      });
+      toast.success("Activity removed from Interested");
+      setInterested(false);
+      // toast.success("Interest Removed");
+    } catch (error) {
+      console.error("Error removing interest: ", error);
+    }
+  };
+
+  // Function to check if activityId exists in interests
+  const checkInterestExists = async (userId, activityId) => {
+    console.log(activityId);
+
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const interests = userDocSnap.data().interests || [];
+
+        return interests.includes(activityId);
+      } else {
+        console.warn("No document found for this user.");
+
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking interest: ", error);
+
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const checkInterest = async () => {
+      const isInterestAdded = await checkInterestExists(currentUser.id, docId);
+      if (isInterestAdded) {
+        setInterested(isInterestAdded);
+        console.log("check Interested from function", isInterestAdded);
+      }
+    };
+
+    checkInterest();
+  });
+
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
@@ -391,7 +491,67 @@ const BlogCard = ({
           </div>
 
           {/* Content container */}
-          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3">
+          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3 relative">
+            <div>
+              {isInterested ? (
+                <button
+                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                  title="Add to My Interests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    console.log("activity removed", docId, currentUser);
+                    // handleInterestUpdate(currentUser.id, docId);
+                    removeInterest(currentUser.id, docId);
+                  }}
+                >
+                  <IoStar className="text-yellow-500" />
+                </button>
+              ) : (
+                <button
+                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                  title="Add to My Interests"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if (currentUser) {
+                      handleInterestUpdate(currentUser.id, docId);
+                      console.log("activity added", docId, currentUser);
+                    } else {
+                      console.log("Please login or Signup to Continue");
+
+                      toast.info("Please login or Signup to Add to favorites", {
+                        style: {
+                          backgroundColor: "#fff", // Background color of the toast
+                          color: "#E55938", // Text color
+                          fontWeight: "bold", // Font weight
+                          fontSize: "16px", // Font size
+                          borderRadius: "8px", // Border radius
+                        },
+                        progressStyle: {
+                          backgroundColor: "#E55938", // Progress bar color
+                          opacity: 1,
+                        },
+                        icon: (
+                          <span
+                            style={{
+                              color: "#E55938",
+                              fontSize: "8px",
+                              marginRight: "20px",
+                            }}
+                          >
+                            <KeyRound />
+                          </span>
+                        ), // Custom icon with color
+                      });
+                    }
+                  }}
+                >
+                  <IoStarOutline />
+                </button>
+              )}
+            </div>
+
             <div>
               {/* Title and Featured button */}
               <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between w-full xl:gap-2">
@@ -403,10 +563,6 @@ const BlogCard = ({
                 ) && (
                   <div className="xl:flex xl:justify-start w-full xl:w-auto hidden">
                     <button
-                      onClick={(e) => {
-                        e.preventDefault();
-                        handleAddToFeature();
-                      }}
                       className="flex items-center bg-[#E55938] text-white mb-2 rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
                     >
                       <MdStarRate className="mr-1 text-lg" />{" "}

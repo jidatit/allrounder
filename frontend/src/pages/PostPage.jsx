@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import {
   IoShareOutline,
-  IoStarHalfSharp,
+  IoStar,
   IoStarOutline,
   IoStarSharp,
 } from "react-icons/io5";
@@ -15,9 +15,14 @@ import { toast } from "react-toastify";
 import {
   collection,
   getDocs,
-  onSnapshot,
   query,
   where,
+  doc,
+  setDoc,
+  updateDoc,
+  arrayUnion,
+  getDoc,
+  arrayRemove,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
@@ -29,6 +34,7 @@ import MapModal from "../admin/components/MapModal";
 import ShareButton from "../admin/components/SharedButton";
 import ReviewSection from "../UI Components/ReviewSection";
 import { useAuth } from "../context/authContext";
+import { KeyRound, ShieldOff } from "lucide-react";
 const createCustomIcon = (number) => {
   const mapMarkerIcon = `
     <svg viewBox="0 0 24 24" fill="currentColor" height="6rem" width="6rem">
@@ -43,13 +49,17 @@ const createCustomIcon = (number) => {
 };
 
 const PostPage = () => {
+  const { currentUser } = useAuth();
+
   const { activityIdParam } = useParams();
   const [relatedActivities, setRelatedActivities] = useState([]);
   const [featuredActivities, setFeaturedActivities] = useState([]);
   const [activities, setActivities] = useState([]);
   const [locationMap, setLocationMap] = useState([]);
-  const { currentUser } = useAuth();
   const [singleActivity, setSingleActivity] = useState([]);
+  const [isInterested, setInterested] = useState(false);
+  const [CheckingInterest, setCheckingInterest] = useState(false);
+
   useEffect(() => {
     fetchFeaturedActivities();
     // ... your existing useEffect logic
@@ -236,6 +246,109 @@ const PostPage = () => {
     }
   };
 
+  const handleInterestUpdate = async (userId, activityId) => {
+    if (!currentUser && !userId) {
+      toast.success("please Signin first to add activity");
+    }
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        // Document exists, check for interests field
+        if (userDocSnap.data().interests) {
+          // Interests field exists, update it by pushing the new activityId
+          await updateDoc(userDocRef, {
+            interests: arrayUnion(activityId),
+          });
+        } else {
+          // Interests field does not exist, create it with activityId in array
+          await setDoc(
+            userDocRef,
+            {
+              interests: [activityId],
+            },
+            { merge: true }
+          );
+        }
+      } else {
+        // Document does not exist, create it with the interests field
+        await setDoc(userDocRef, {
+          interests: [activityId],
+        });
+      }
+      toast.success("Activity added to Interested");
+      setInterested(true);
+    } catch (error) {
+      console.error("Error updating interests: ", error);
+      toast.error("Error adding Interest", error);
+    }
+  };
+
+  const removeInterest = async (userId, activityId) => {
+    try {
+      const userDocRef = doc(db, "users", userId);
+
+      await updateDoc(userDocRef, {
+        interests: arrayRemove(activityId),
+      });
+      toast.success("Activity removed from Interested");
+      setInterested(false);
+      // toast.success("Interest Removed");
+    } catch (error) {
+      console.error("Error removing interest: ", error);
+    }
+  };
+
+  // Function to check if activityId exists in interests
+  const checkInterestExists = async (userId, activityId) => {
+    console.log(activityId);
+
+    try {
+      const userDocRef = doc(db, "users", userId);
+      const userDocSnap = await getDoc(userDocRef);
+
+      if (userDocSnap.exists()) {
+        const interests = userDocSnap.data().interests || [];
+
+        return interests.includes(activityId);
+      } else {
+        console.warn("No document found for this user.");
+
+        return false;
+      }
+    } catch (error) {
+      console.error("Error checking interest: ", error);
+
+      return false;
+    }
+  };
+
+  useEffect(() => {
+    const checkInterest = async () => {
+      if (currentUser) {
+        const isInterestAdded = await checkInterestExists(
+          currentUser.id,
+          formData.documentId
+        );
+        setCheckingInterest(isInterestAdded);
+        if (isInterestAdded) {
+          setInterested(isInterestAdded);
+          console.log("check Interested from function", isInterestAdded);
+        } else {
+          return;
+        }
+      }
+    };
+
+    checkInterest(); // Call the async function
+  });
+
+  const locations = [
+    { id: 1, name: "Location 1", lat: 33.672326, lng: 73.001917 },
+    { id: 2, name: "Location 2", lat: 33.655181, lng: 3.033181 },
+    { id: 3, name: "Location 3", lat: 33.672326, lng: 73.001918 },
+  ];
   const currentUrl = window.location.href;
   const [copied, setCopied] = useState(false);
 
@@ -489,8 +602,61 @@ const PostPage = () => {
               {formData.title}
             </h2>
             <div className="flex md:items-center justify-between    flex-col md:flex-row md:w-[500px] lg:w-[650px]  mt-2 md:mt-6">
-              <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">
-                <IoStarOutline /> <p>im Interested</p>
+              <div
+                className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1 cursor-pointer"
+                onClick={() => {
+                  console.log("Clicked");
+                  // console.log(currentUser.id);
+                  console.log(formData.documentId);
+                  console.log("isInterested", isInterested);
+
+                  if (isInterested) {
+                    removeInterest(currentUser.id, formData.documentId);
+                    console.log("remove interested");
+                  } else {
+                    if (currentUser) {
+                      handleInterestUpdate(currentUser.id, formData.documentId);
+                    } else {
+                      console.log("Please login or Signup to Continue");
+
+                      toast.info("Please login or Signup to Add to favorites", {
+                        style: {
+                          backgroundColor: "#fff", // Background color of the toast
+                          color: "#E55938", // Text color
+                          fontWeight: "bold", // Font weight
+                          fontSize: "16px", // Font size
+                          borderRadius: "8px", // Border radius
+                        },
+                        progressStyle: {
+                          backgroundColor: "#E55938", // Progress bar color
+                          opacity: 1,
+                        },
+                        icon: (
+                          <span
+                            style={{
+                              color: "#E55938",
+                              fontSize: "8px",
+                              marginRight: "20px",
+                            }}
+                          >
+                            <KeyRound />
+                          </span>
+                        ), // Custom icon with color
+                      });
+                    }
+                  }
+                }}
+              >
+                {isInterested ? (
+                  <>
+                    <IoStar className="text-yellow-500" />
+                    <p>Interested </p>
+                  </>
+                ) : (
+                  <>
+                    <IoStarOutline /> <p>im Interested </p>
+                  </>
+                )}
               </div>
               <ShareButton />
               <div className="lg:text-2xl text-xl flex items-center lg:gap-2 gap-1">

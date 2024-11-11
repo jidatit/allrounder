@@ -70,12 +70,7 @@ function App() {
               <Route path="/forgotPassword" element={<ForgotPassword />} />
               <Route path="/resetPassword" element={<ResetPasswordFrom />} />
               <Route path="/" element={<Layout />}>
-                <Route
-                  index
-                  element={
-                    <Homepage /> // Allow access to Homepage for both user and admin
-                  }
-                />
+                <Route index element={<Homepage />} />
                 <Route path="/blog" element={<Blogs />} />
                 <Route
                   path="/allActivities/:name"

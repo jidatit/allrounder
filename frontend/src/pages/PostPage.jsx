@@ -23,6 +23,7 @@ import {
   arrayUnion,
   getDoc,
   arrayRemove,
+  onSnapshot,
 } from "firebase/firestore";
 import { db } from "../config/firebase";
 import ImageSlider from "../admin/components/ImageSlider";
@@ -649,7 +650,7 @@ const PostPage = () => {
               >
                 {isInterested ? (
                   <>
-                    <IoStar className="text-yellow-500" />
+                    <IoStar className="text-[#E55938]" />
                     <p>Interested </p>
                   </>
                 ) : (

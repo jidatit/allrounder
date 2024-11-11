@@ -477,10 +477,10 @@ const BlogCard = ({
   return (
     <Link
       to={`/post/${activityIdParam}/${featureActivityParam}`}
-      className="flex flex-col items-start gap-3 sssm:gap-5 rounded-lg shadow-lg justify-start p-2 sm:p-3 lg:p-2 mb-6 w-full"
+      className="flex flex-col items-start  gap-3 sssm:gap-5 rounded-lg shadow-lg justify-start p-2 sm:p-3 lg:p-2 mb-6 w-full"
     >
       <div className="flex flex-col bg-white overflow-hidden w-full">
-        <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4">
+        <div className="flex flex-col gap-4 lg:gap-0 lg:flex-row p-3 sssm:p-4 ">
           {/* Image container */}
           <div className="w-full lg:w-[40%] smd:mr-4 h-[200px] sssm:h-[250px] smd:h-[30vh]">
             <img
@@ -491,66 +491,72 @@ const BlogCard = ({
           </div>
 
           {/* Content container */}
-          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3 relative">
-            <div>
-              {isInterested ? (
-                <button
-                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
-                  title="Add to My Interests"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    console.log("activity removed", docId, currentUser);
-                    // handleInterestUpdate(currentUser.id, docId);
-                    removeInterest(currentUser.id, docId);
-                  }}
-                >
-                  <IoStar className="text-yellow-500" />
-                </button>
-              ) : (
-                <button
-                  className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
-                  title="Add to My Interests"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    if (currentUser) {
-                      handleInterestUpdate(currentUser.id, docId);
-                      console.log("activity added", docId, currentUser);
-                    } else {
-                      console.log("Please login or Signup to Continue");
 
-                      toast.info("Please login or Signup to Add to favorites", {
-                        style: {
-                          backgroundColor: "#fff", // Background color of the toast
-                          color: "#E55938", // Text color
-                          fontWeight: "bold", // Font weight
-                          fontSize: "16px", // Font size
-                          borderRadius: "8px", // Border radius
-                        },
-                        progressStyle: {
-                          backgroundColor: "#E55938", // Progress bar color
-                          opacity: 1,
-                        },
-                        icon: (
-                          <span
-                            style={{
-                              color: "#E55938",
-                              fontSize: "8px",
-                              marginRight: "20px",
-                            }}
-                          >
-                            <KeyRound />
-                          </span>
-                        ), // Custom icon with color
-                      });
-                    }
-                  }}
-                >
-                  <IoStarOutline />
-                </button>
-              )}
-            </div>
+          <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3 relative">
+            {currentUser.userType === "user" ? (
+              <div>
+                {isInterested ? (
+                  <button
+                    className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                    title="Add to My Interests"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      console.log("activity removed", docId, currentUser);
+                      // handleInterestUpdate(currentUser.id, docId);
+                      removeInterest(currentUser.id, docId);
+                    }}
+                  >
+                    <IoStar className="text-[#E55938]" />
+                  </button>
+                ) : (
+                  <button
+                    className="absolute bottom-1 right-0 bg-white p-2 rounded-full border-2 border-black text-2xl text-black"
+                    title="Add to My Interests"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      e.preventDefault();
+                      if (currentUser) {
+                        handleInterestUpdate(currentUser.id, docId);
+                        console.log("activity added", docId, currentUser);
+                      } else {
+                        console.log("Please login or Signup to Continue");
+
+                        toast.info(
+                          "Please login or Signup to Add to favorites",
+                          {
+                            style: {
+                              backgroundColor: "#fff", // Background color of the toast
+                              color: "#E55938", // Text color
+                              fontWeight: "bold", // Font weight
+                              fontSize: "16px", // Font size
+                              borderRadius: "8px", // Border radius
+                            },
+                            progressStyle: {
+                              backgroundColor: "#E55938", // Progress bar color
+                              opacity: 1,
+                            },
+                            icon: (
+                              <span
+                                style={{
+                                  color: "#E55938",
+                                  fontSize: "8px",
+                                  marginRight: "20px",
+                                }}
+                              >
+                                <KeyRound />
+                              </span>
+                            ), // Custom icon with color
+                          }
+                        );
+                      }
+                    }}
+                  >
+                    <IoStarOutline />
+                  </button>
+                )}
+              </div>
+            ) : null}
 
             <div>
               {/* Title and Featured button */}
@@ -562,9 +568,7 @@ const BlogCard = ({
                   (featured) => featured.activityId === activityIdParam
                 ) && (
                   <div className="xl:flex xl:justify-start w-full xl:w-auto hidden">
-                    <button
-                      className="flex items-center bg-[#E55938] text-white mb-2 rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base"
-                    >
+                    <button className="flex items-center bg-[#E55938] text-white mb-2 rounded-full px-3 py-1 sssm:px-4 sssm:py-2 hover:bg-[#dd4826] text-sm sssm:text-base">
                       <MdStarRate className="mr-1 text-lg" />{" "}
                       {/* Apply a fixed size here */}
                       Featured Activity

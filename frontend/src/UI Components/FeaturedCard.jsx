@@ -63,14 +63,16 @@ const FeaturedCard = ({
   const renderStars = () => {
     return [...Array(5)].map((_, index) => {
       if (index < Math.floor(averageRating)) {
-        return <IoStarSharp key={index} className="text-[#FFA432]" />;
+        return <IoStarSharp key={index} className="text-[#FFA432] text-xl " />;
       } else if (
         index === Math.floor(averageRating) &&
         averageRating % 1 >= 0.5
       ) {
-        return <IoStarHalfSharp key={index} className="text-[#FFA432]" />;
+        return (
+          <IoStarHalfSharp key={index} className="text-[#FFA432] text-xl" />
+        );
       } else {
-        return <IoStarSharp key={index} className="text-[#CFD9DE]" />;
+        return <IoStarSharp key={index} className="text-[#CFD9DE] text-xl" />;
       }
     });
   };
@@ -111,14 +113,14 @@ const FeaturedCard = ({
               <p className="text-sm text-[#808080]">{ageRange}</p>
             </div>
           </div>
-          <div className="flex items-center justify-between border-t px-4">
+          <div className="flex items-center justify-between border-t px-4  pt-2">
             <div className="flex flex-col items-start">
               <div className="flex">
                 <div className="flex items-center text-2xl">
                   {renderStars()}
                 </div>
               </div>
-              <span className="text-sm text-[#778088] custom-semibold mt-[4px]">
+              <span className="text-sm text-[#778088] custom-semibold mt-[4px] ml-0.5">
                 {reviewCount} reviews
               </span>
             </div>

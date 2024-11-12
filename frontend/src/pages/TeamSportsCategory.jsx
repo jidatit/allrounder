@@ -493,7 +493,7 @@ const BlogCard = ({
           {/* Content container */}
 
           <div className="w-full flex flex-col justify-between mt-4 smd:mt-0 xl:pl-3 relative">
-            {currentUser.userType === "user" ? (
+            {currentUser && currentUser.userType === "user" ? (
               <div>
                 {isInterested ? (
                   <button

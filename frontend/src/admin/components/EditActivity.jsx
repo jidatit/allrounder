@@ -16,12 +16,12 @@ import {
   where,
 } from "firebase/firestore";
 import { toast } from "react-toastify";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { ActivityImages, ProfilePicture } from "./ImageMnagment";
 
 const EditActivityComponent = () => {
   const { activityIdParam, featureActivityParam } = useParams();
-
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [formData, setFormData] = useState({
     activityId: "",
@@ -372,7 +372,7 @@ const EditActivityComponent = () => {
       const isFeatured = await isActivityFeatured(formData.activityId);
 
       if (isFeatured) {
-        toast.success("Activity updated successfully in both collections!");
+        toast.success("Activity updated successfully!");
       } else {
         toast.success("Activity updated successfully!");
       }
@@ -388,6 +388,7 @@ const EditActivityComponent = () => {
     try {
       setLoading(true);
       const updatedActivityId = await handleEditActivity(formData);
+      navigate(`/AdminLayout/activityManagement`);
       // Toast is already handled in handleEditActivity
     } catch (error) {
       console.error("Form submission error:", error);
@@ -422,7 +423,7 @@ const EditActivityComponent = () => {
           </svg>
           <span className="sr-only">Loading...</span>
           <h1 className="bg-orange-600 text-white rounded-xl px-4 py-2.5 shadow-md font-radios text-xl mt-4 ">
-            Editing You Activity Hold On For a bit...{" "}
+            Editing Your Activity Hold On For a bit...{" "}
           </h1>
         </div>
       </div>

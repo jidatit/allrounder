@@ -247,6 +247,7 @@ const CreateActivity = () => {
       setLoading(false);
       return { docId: activityRef.id, activityId: activityId }; // Return both Firestore doc ID and custom activity ID
     } catch (error) {
+      setLoading(false);
       console.error("Error creating activity:", error);
       throw new Error(`Failed to create activity: ${error.message}`);
     }
@@ -258,8 +259,10 @@ const CreateActivity = () => {
 
       toast.success(`Activity created successfully with ID: ${docId}`);
       navigate(`/AdminLayout/activityManagement`);
+      setLoading(false);
       // Reset form or redirect
     } catch (error) {
+      setLoading(false);
       console.error("Form submission error:", error);
       toast.error(error.message || "Error submitting form");
     }

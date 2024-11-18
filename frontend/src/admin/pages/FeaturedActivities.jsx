@@ -45,31 +45,52 @@ const FeaturedActivities = () => {
 
   const handleDelete = async (activityId) => {
     try {
-      // Create a query to find the document with matching activityId
-      const activitiesRef = collection(db, "featuredActivities");
-      const q = query(activitiesRef, where("activityId", "==", activityId));
+      // Reference to the "activities" collection
+      const activitiesRef = collection(db, "activities");
+      const activitiesQuery = query(
+        activitiesRef,
+        where("activityId", "==", activityId)
+      );
 
-      // Get the document that matches the activityId
-      const querySnapshot = await getDocs(q);
+      // Get the document that matches the activityId in "activities"
+      const activitiesSnapshot = await getDocs(activitiesQuery);
 
-      if (!querySnapshot.empty) {
-        // Get the first matching document
-        const documentToDelete = querySnapshot.docs[0];
+      if (!activitiesSnapshot.empty) {
+        // Get the first matching document in "activities"
+        const activityToDelete = activitiesSnapshot.docs[0];
 
         // Delete the document using its document ID
-        await deleteDoc(doc(db, "featuredActivities", documentToDelete.id));
-
-        // Update the local state immediately
-        setActivities((prevActivities) =>
-          prevActivities.filter(
-            (activity) => activity.activityId !== activityId
-          )
-        );
-
-        toast.success("Activity deleted successfully");
+        await deleteDoc(doc(db, "activities", activityToDelete.id));
       } else {
-        toast.error("Activity not found");
+        toast.error("Activity not found in activities collection");
       }
+
+      // Reference to the "featuredActivities" collection
+      const featuredActivitiesRef = collection(db, "featuredActivities");
+      const featuredQuery = query(
+        featuredActivitiesRef,
+        where("activityId", "==", activityId)
+      );
+
+      // Get the document that matches the activityId in "featuredActivities"
+      const featuredSnapshot = await getDocs(featuredQuery);
+
+      if (!featuredSnapshot.empty) {
+        // Get the first matching document in "featuredActivities"
+        const featuredToDelete = featuredSnapshot.docs[0];
+
+        // Delete the document using its document ID
+        await deleteDoc(doc(db, "featuredActivities", featuredToDelete.id));
+      } else {
+        toast.error("Activity not found in featuredActivities collection");
+      }
+
+      // Update the local state immediately
+      setActivities((prevActivities) =>
+        prevActivities.filter((activity) => activity.activityId !== activityId)
+      );
+
+      toast.success("Activity deleted successfully from both collections");
     } catch (error) {
       console.error("Error deleting activity:", error);
       toast.error("Error deleting activity: " + error.message);

@@ -119,7 +119,7 @@ useEffect(() => {
   const showLoginIcon = JSON.parse(localStorage.getItem("showLoginIcon"));
 
   return (
-    <header className="sticky top-0 z-50 bg-[#ffffff]">
+    <header className="sticky top-0 z-50 bg-[#ffffff] pt-2 pb-2">
       <section className="md:flex items-center justify-between sm:px-2 lg:px-12 custom-regular hidden mx-auto max-w-[1440px]">
         <Link to={"/"}>
           {/* <p className="text-[40px] custom-bold">LOGO</p> */}

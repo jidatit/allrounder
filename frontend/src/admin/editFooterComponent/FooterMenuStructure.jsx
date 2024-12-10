@@ -10,12 +10,17 @@ const FooterMenuStructure = () => {
   const [menuMain, setMenuMain] = useState([
     "Home",
     "Activities",
-    "Featured Activities",
+    // "Featured Activities",
     // "Blog",
-    "Join Now",
+    "Faq",
+    "JoinNow",
   ]);
-  const [menuSecondary, setMenuSecondary] = useState(["Login", "Signup"]);
-
+  const [menuSecondary, setMenuSecondary] = useState([
+    "Login", 
+    "Signup",
+    "Conditions",
+    "Licenses",
+  ]);
   const fetchMenusFromFirestore = async () => {
     try {
       const docRef = doc(db, "FooterMenuStructure", "menus");

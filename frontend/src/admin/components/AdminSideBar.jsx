@@ -128,23 +128,38 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
         height: "100vh",
         background: "#ffffff",
       }}
-      className="transition-all duration-300 ease-in-out"
+      className=" relative flex flex-col transition-all duration-300 ease-in-out"
     >
-      
+      <div
+    className={`flex items-center ${
+      isSidebarExpanded ? "justify-between" : "justify-center"
+    } p-4`}
+  >
       {/* Display the logo */}
-      <div style={{ padding: 16, textAlign: "center" }}>
+      {/* <div style={{ padding: 16, textAlign: "center" }}> */}
         {/* console.log("hello"); */}
          {logoUrl ? (
           <img
             src={logoUrl } 
             alt="Logo"
-            style={{ maxWidth: "100%", maxHeight: 80 }}
+            // style={{ maxWidth: "100%", maxHeight: 80 }}
+             className="max-h-12"
           />
         ) : (
-          <div style={{ padding: 16, fontWeight: "bold", fontSize: "18px" }}> 
-          <h1>{isSidebarExpanded ? "LOGO" : "Logo"}</h1>  </div>
+          // <div style={{ padding: 16, fontWeight: "bold", fontSize: "18px" }}> 
+          <h1 className="font-bold text-lg">{isSidebarExpanded ? "LOGO" : "Logo"}</h1> 
+          //  </div>
         )}
+          {isSidebarExpanded && (
+      <Link
+        to="/"
+        className="ml-4 bg-red-500 hover:bg-red-600 text-white font-semibold py-2 px-4 rounded-full transition-all duration-200 ease-in-out"
+      >
+        Back to Website
+      </Link>
+    )}
       </div>
+      
       <Menu
         mode="inline"
         theme="light"
@@ -244,7 +259,6 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
           Logout
         </Menu.Item>
       </Menu>
-
       <div
         style={{
           position: "absolute",

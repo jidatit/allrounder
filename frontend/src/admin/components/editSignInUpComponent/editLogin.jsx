@@ -106,6 +106,7 @@ const EditLogin = () => {
                 )}
                
               </div>
+              {loading && <p>Uploading...</p>}
 
               {/* Upload Button Below Image */}
               <Upload

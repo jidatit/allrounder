@@ -29,6 +29,7 @@ import EditHome from "./admin/pages/EditHome";
 import EditSignUp from "./admin/pages/EditSignUp";
 import EditLogin from "./admin/pages/EditLogin";
 import EditFooter from "./admin/pages/EditFooter";
+import ComingSoon from "./admin/pages/ComingSoon";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -89,6 +90,7 @@ function App() {
                 <Route path="/signup" element={<SignupPage />} />
                 <Route path="/login" element={<LoginPage />} />
                 <Route path="/blog/:id" element={<BlogPost />} />
+                <Route path="/comingSoon" element={<ComingSoon />} />
               </Route>
 
               {/* Protected User Dashboard Route */}
@@ -114,6 +116,12 @@ function App() {
                   path="my-interests"
                   element={
                     currentUser ? <MyInterests /> : <Navigate to="/login" />
+                  }
+                />
+              <Route
+                  path="comingSoon"
+                  element={
+                    currentUser ? < ComingSoon /> : <Navigate to="/login" />
                   }
                 />
               </Route>
@@ -216,7 +224,6 @@ function App() {
                     )
                   }
                 />
-
                 \{" "}
                 <Route
                   path="editActivity/:activityIdParam/:featureActivityParam"

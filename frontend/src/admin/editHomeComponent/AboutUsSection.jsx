@@ -126,7 +126,7 @@ const AboutUsSection = () => {
                 <h4 className="mb-4">Edit Heading</h4>
                 <div className='flex items-center'>
                 <Input
-                  className="w-3/4 p-2 border rounded-full text-sm border-gray-800"
+                  className="w-3/4 p-2 border rounded-full text-sm border-gray-800 font-normal text-gray-800"
                   placeholder="Write Here....."
                   value={aboutUs.heading}
                   onChange={(e) =>
@@ -148,7 +148,7 @@ const AboutUsSection = () => {
                 <h4 className="mb-4">Edit Paragraph</h4>
                 <div className="flex items-center">
                 <Input.TextArea
-                  className="w-3/4 p-2 border  text-sm border-gray-800"
+                  className="w-3/4 p-2 border  text-sm border-gray-800 font-normal text-gray-800"
                   placeholder="Write here..."
                   value={aboutUs.paragraph}
                   onChange={(e) =>
@@ -158,7 +158,7 @@ const AboutUsSection = () => {
                 />
                   <button
                     onClick={saveParagraph}
-                    className="ml-2 bg-red-500 text-white px-4 py-2 rounded-full text-sm"
+                    className="ml-4 bg-red-500 text-white px-4 py-2 rounded-full text-sm"
                     disabled={loading}
                   >
                     Save Paragraph
@@ -211,7 +211,7 @@ const AboutUsSection = () => {
               <div className="w-1/2 p-8 flex flex-col items-center">
                 <h4 className="mb-6 font-bold text-2xl">Edit Button Text</h4>
                 <Input
-                  className="w-full border rounded text-sm border-gray-800"
+                  className="w-full border rounded text-sm border-gray-800 font-normal text-gray-800"
                   placeholder="Write Here....."
                   value={aboutUs.buttonName}
                   onChange={(e) =>

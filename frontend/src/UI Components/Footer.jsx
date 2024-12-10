@@ -19,12 +19,16 @@ function Footer() {
   const menuURLs = {
     Home: "/",
     Activities:"/allActivities",
-    Blogs: "/blog",
+    // Blogs: "/blog",
     // Featured_Activities:"/activities",
+    Joinnow: "/comingsoon", 
+    Faq: "/comingsoon",
       };
       const menuURLs1 = {
         Login: "/login",
-         Signup:"/signup"
+         Signup:"/signup",
+         Conditions: "/comingsoon", 
+         Licenses: "/comingsoon",
           };
   const fetchLogo = async () => {
     try {
@@ -144,7 +148,7 @@ function Footer() {
         </div>
         <div className="md:h-[230px]    md:w-0 md:border-x-2 border-black"></div>
 
-        <div className=" lg:px-20   md:w-1/4 w-full   md:border-black flex items-start h-[230px] ">
+        <div className=" lg:px-20   md:w-1/4 w-full md:border-black flex items-start h-[230px] mt-10 ">
           <ul className="flex flex-col gap-4">
             {menuItems.map((item,index) => {
               return (
@@ -180,7 +184,7 @@ function Footer() {
         </div>
         <div className="md:h-[230px]   border-t w-full  mb-4 md:mb-0 md:w-0 md:border-x-2 border-black"></div>
 
-        <div className=" lg:px-20  md:w-1/4 w-full   md:border-black    flex  items-start h-[230px] ">
+        <div className=" lg:px-20  md:w-1/4 w-full   md:border-black    flex  items-start h-[230px] mt-10  ">
           <ul
             className="flex flex-col gap-4
           "

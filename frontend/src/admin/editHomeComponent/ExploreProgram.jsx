@@ -85,10 +85,10 @@ const saveExploreMenuToFirestore = async (newMenu) => {
                 onKeyDown={(e) => handleKeyDown(e, index)}
                 onBlur={() => handleBlur(index)}
                 autoFocus
-                className="flex-1"
+                className="flex-1 font-normal text-gray-800"
               />
             ) : (
-              <p className="flex-1 m-0">{item.name}</p> 
+              <p className="flex-1 m-0 font-normal text-gray-800">{item.name}</p> 
             )}
             <Button
               icon={<EditOutlined />}
@@ -108,11 +108,11 @@ const saveExploreMenuToFirestore = async (newMenu) => {
           onKeyDown={(e) => handleParagrahKeyDown(e, index)}
           onBlur={() => handleParagraphBlur(index)}
           rows={3}
-          className="flex-1"
+          className="flex-1 font-normal text-gray-800"
           autoFocus
         />
       ) : (
-        <p className="flex-1 m-0">{item.paragraph }</p>
+        <p className="flex-1 m-0 font-normal text-gray-800">{item.paragraph }</p>
       )}
       <Button
               icon={<EditOutlined />}
@@ -228,15 +228,32 @@ const saveExploreMenuToFirestore = async (newMenu) => {
           message.error("Text field is empty");
         }
       };
-      
+
+
+      const fetchTextFromFirestore = async () => {
+        try {
+          const docRef = doc(db, "ExploreProgram", "Text");
+          const docSnap = await getDoc(docRef);
+          if (docSnap.exists()) {
+            const data = docSnap.data();
+            setTextInput(data.text);
+          } else {
+            console.log("No such document!");
+          }
+        } catch (e) {
+          console.error("Error fetching text:", e);
+          message.error("Failed to fetch text from Firestore.");
+        }
+      };
+    
+      useEffect(() => {
+        fetchTextFromFirestore();
+      }, []);
       const handleKeyDown2 = (e) => {
         if (e.key === 'Enter') {
           TextSaveToFirestore();
         }
       };
-
-
-
       
   const fetchExploreImage = async () => {
     console.log("hhhhh")
@@ -320,7 +337,7 @@ const fileInputRefs = useRef(menu.map(() => React.createRef())); // Create a ref
                   <div className="mt-2">
                     <div className="flex items-centre">
                       <input
-                        className="w-3/4 p-2 border border-gray-500 rounded-full text-sm"
+                        className="w-3/4 p-2 border border-gray-500 rounded-full text-sm font-normal text-gray-800"
                         placeholder="Explore Program"
                         value={textInput} 
                         onChange={handleInputChange1} 

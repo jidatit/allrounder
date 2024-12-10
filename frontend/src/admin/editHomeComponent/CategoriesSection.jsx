@@ -39,10 +39,10 @@ const CategoriesSection = () => {
             onKeyDown={(e) => handleKeyDown(e, index)}
             onBlur={() => handleBlur(index)}
             autoFocus
-            className="flex-1"
+            className="flex-1 text-sm font-normal text-gray-700"
           />
         ) : (
-          <p className="flex-1 m-0">{item.name}</p> 
+          <p className="flex-1 m-0 text-sm font-normal text-gray-700 ">{item.name}</p> 
         )}
         <Button
           icon={<EditOutlined />}
@@ -154,10 +154,10 @@ const saveCategoryMenuToFirestore = async (newMenu) => {
   //category menu ends hereeeeeeeeeee
 
 
-  //heading of catergory section startsss herreeee
-  const handleInputChange1 = (e) => {
-    setTextInput(e.target.value); 
-  };
+  // //heading of catergory section startsss herreeee
+  // const handleInputChange1 = (e) => {
+  //   setTextInput(e.target.value); 
+  // };
 
   const TextSaveToFirestore = async () => {
     if (textInput.trim() !== '') { 
@@ -184,6 +184,27 @@ const saveCategoryMenuToFirestore = async (newMenu) => {
       TextSaveToFirestore();
     }
   };
+
+  // Fetch the text from Firestore
+  const fetchTextFromFirestore = async () => {
+    try {
+      const docRef = doc(db, "CategoryMenu", "Text");
+      const docSnap = await getDoc(docRef);
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        setTextInput(data.text);
+      } else {
+        console.log("No such document!");
+      }
+    } catch (e) {
+      console.error("Error fetching text:", e);
+      message.error("Failed to fetch text from Firestore.");
+    }
+  };
+
+  useEffect(() => {
+    fetchTextFromFirestore();
+  }, []);
   ////heading of catergory section  endssss herreeee
 
   ///upload images of category section functions startss heereeeee
@@ -265,10 +286,11 @@ const saveCategoryMenuToFirestore = async (newMenu) => {
             <Panel className="font-bold text-xl" header="Category Section" key="1">
                 <div className="flex items-centre">
                   <input
-                    className="w-3/4 p-2 border border-gray-500 rounded-full text-sm"
+                    className="w-3/4 p-2 border border-gray-500 rounded-full text-sm  text-sm font-normal text-gray-700"
                     placeholder="Discover Categories"
                     value={textInput} 
-                    onChange={handleInputChange1} 
+                    // onChange={handleInputChange1} 
+                    onChange={(e) => setTextInput(e.target.value)}
                     onKeyDown={handleKeyDown2}
 
                   ></input>
@@ -280,7 +302,7 @@ const saveCategoryMenuToFirestore = async (newMenu) => {
                     </button>
                   
                 </div>
-                <div> b
+                <div> 
                   <h4 className=" mt-5">Edit Categories</h4>
                   <div className="p-5">
                     <Row gutter={[16, 16]}>

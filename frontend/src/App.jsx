@@ -31,7 +31,7 @@ import EditLogin from "./admin/pages/EditLogin";
 import EditFooter from "./admin/pages/EditFooter";
 import ComingSoon from "./admin/pages/ComingSoon";
 
-const LoadingSpinner = () => (
+export const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
     {/* Spinner */}
     <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-gray-900/50 animate-spin"></div>
@@ -82,6 +82,10 @@ function App() {
                   path="/allActivities/:name"
                   element={<TeamSportsCategory />}
                 />
+                <Route
+                  path="/allActivitiesSearch/:activityName"
+                  element={<TeamSportsCategory />}
+                />
                 <Route path="/allActivities" element={<TeamSportsCategory />} />
                 <Route
                   path="/post/:activityIdParam/:featureActivityParam"
@@ -118,10 +122,10 @@ function App() {
                     currentUser ? <MyInterests /> : <Navigate to="/login" />
                   }
                 />
-              <Route
+                <Route
                   path="comingSoon"
                   element={
-                    currentUser ? < ComingSoon /> : <Navigate to="/login" />
+                    currentUser ? <ComingSoon /> : <Navigate to="/login" />
                   }
                 />
               </Route>
@@ -170,58 +174,34 @@ function App() {
                     )
                   }
                 />
-
-                 <Route
+                <Route
                   path="editHeader"
                   element={
-                    currentUser ? (
-                      <EditHeader />
-                    ) : (
-                      <Navigate to="/login" />
-                    )
+                    currentUser ? <EditHeader /> : <Navigate to="/login" />
                   }
-                />  
-
+                />
                 <Route
                   path="editHome"
                   element={
-                    currentUser ? (
-                      <EditHome />
-                    ) : (
-                      <Navigate to="/login" />
-                    )
+                    currentUser ? <EditHome /> : <Navigate to="/login" />
                   }
-                />  
-
+                />
                 <Route
                   path="editSignUp"
                   element={
-                    currentUser ? (
-                      <EditSignUp />
-                    ) : (
-                      <Navigate to="/login" />
-                    )
+                    currentUser ? <EditSignUp /> : <Navigate to="/login" />
                   }
                 />
-                  <Route
+                <Route
                   path="editLogin"
                   element={
-                    currentUser ? (
-                    <EditLogin/>
-                    ) : (
-                      <Navigate to="/login" />
-                    )
+                    currentUser ? <EditLogin /> : <Navigate to="/login" />
                   }
                 />
-
-              <Route
+                <Route
                   path="editFooter"
                   element={
-                    currentUser ? (
-                    <EditFooter/>
-                    ) : (
-                      <Navigate to="/login" />
-                    )
+                    currentUser ? <EditFooter /> : <Navigate to="/login" />
                   }
                 />
                 \{" "}

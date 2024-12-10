@@ -49,10 +49,15 @@ const TeamSportsCategory = () => {
   // ];
   const [activities, setActivities] = useState([]);
   const { name } = useParams(); // Get category from URL params
+  const { activityName } = useParams(); // Get category from URL params
+  console.log("actiu", activityName);
   const [loading, setLoading] = useState(true);
   const [loading2, setLoading2] = useState(true);
   const [locationMap, setLocationMap] = useState([]);
   const navigate = useNavigate();
+  const [searchedActivities, setSearchedActivities] = useState([]);
+  const [allActivities, setAllActivities] = useState([]);
+  const [searchLoading, setSearchLoading] = useState(false);
   // Fetch all activities initially
   const updateMapLocations = async (activitiesToMap) => {
     const provider = new OpenStreetMapProvider();
@@ -69,6 +74,42 @@ const TeamSportsCategory = () => {
     const newLocations = await Promise.all(locationPromises);
     setLocationMap(newLocations);
   };
+  // const [allActivities, setAllActivities] = useState([]);
+  // const [searchedActivities, setSearchedActivities] = useState([]);
+  useEffect(() => {
+    const fetchAllActivities = async () => {
+      try {
+        setSearchLoading(true); // Indicate loading for search results
+        const activitiesRef = collection(db, "activities");
+        const querySnapshot = await getDocs(activitiesRef);
+
+        const activitiesData = querySnapshot.docs.map((doc) => ({
+          ...doc.data(),
+          docId: doc.id,
+        }));
+        setAllActivities(activitiesData);
+
+        // Search filtering
+        if (activityName?.trim()) {
+          const keywords = activityName.toLowerCase().split(" ");
+          const filtered = activitiesData.filter((activity) =>
+            keywords.some((keyword) =>
+              activity.title.toLowerCase().includes(keyword)
+            )
+          );
+          setSearchedActivities(filtered);
+        } else {
+          setSearchedActivities(activitiesData);
+        }
+      } catch (error) {
+        console.error("Error fetching activities:", error);
+      } finally {
+        setSearchLoading(false); // Search results have been updated
+      }
+    };
+
+    fetchAllActivities();
+  }, [activityName]);
   useEffect(() => {
     const fetchAllActivities = async () => {
       try {
@@ -259,7 +300,9 @@ const TeamSportsCategory = () => {
       <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5 ">
         <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl">
-            {name ? `${name} Activities` : "All Activities"}
+            {name
+              ? `${name} Activities`
+              : `All Activities including ${activityName}`}
           </h2>
 
           <div className="flex gap-3 custom-medium mt-3 lg:mt-8">
@@ -279,12 +322,22 @@ const TeamSportsCategory = () => {
               <ActivitySkeletonLoader />
             ) : (
               <div className="lg:w-[70%] xxl:w-[60%] h-[860px] overflow-auto p-2 scrollbar-custom">
-                {filteredActivities.length === 0 ? (
+                {searchLoading ? (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <p className="text-2xl">Loading search results...</p>
+                  </div>
+                ) : (activityName?.trim()
+                    ? searchedActivities
+                    : filteredActivities
+                  ).length === 0 ? (
                   <div className="w-full h-full flex items-center justify-center">
                     <p className="text-2xl">No activities found</p>
                   </div>
                 ) : (
-                  filteredActivities.map((activity) => (
+                  (activityName?.trim()
+                    ? searchedActivities
+                    : filteredActivities
+                  ).map((activity) => (
                     <BlogCard
                       key={activity.docId}
                       activityIdParam={activity.activityId}
@@ -306,7 +359,9 @@ const TeamSportsCategory = () => {
             )}
             <div className="lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
               <ActivitiesMap
-                activities={filteredActivities}
+                activities={
+                  activityName ? searchedActivities : filteredActivities
+                }
                 locations={locationMap}
                 featureActivityParam="simpleActivity"
               />

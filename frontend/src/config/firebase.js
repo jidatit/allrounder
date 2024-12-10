@@ -1,7 +1,9 @@
 import { initializeApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider } from "firebase/auth";
 import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
+import { getStorage } from "firebase/storage";  
+ 
+
 // TODO: Add SDKs for Firebase products that you want to use
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_API_KEY,
@@ -18,3 +20,4 @@ export const googleProvider = new GoogleAuthProvider();
 
 export const db = getFirestore(app);
 export const storage = getStorage(app);
+

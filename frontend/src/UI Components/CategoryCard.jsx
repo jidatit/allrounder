@@ -1,6 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
+
 const CategoryCard = ({ name, url }) => {
   return (
     <Link
@@ -11,6 +12,8 @@ const CategoryCard = ({ name, url }) => {
         className="w-full h-full"
         style={{
           backgroundImage: `url(${url})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
         }}
       >
         <div className="bg-[#000] bg-opacity-50 h-full w-full flex items-center justify-center">

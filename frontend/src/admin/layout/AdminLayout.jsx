@@ -5,16 +5,22 @@ import Navbar from "../components/Navbar";
 import AdminSideBar from "../components/AdminSideBar";
 
 const AdminLayout = () => {
-  const [isSidebarExpanded, setSidebarExpanded] = useState(false);
+  const [isSidebarExpanded, setSidebarExpanded] = useState(true);
   const [isSmallScreen, setIsSmallScreen] = useState(window.innerWidth < 768);
 
   const toggleSidebar = () => {
     setSidebarExpanded(!isSidebarExpanded);
+
   };
 
   useEffect(() => {
     const handleResize = () => {
       setIsSmallScreen(window.innerWidth < 768);
+      if (window.innerWidth < 768) {
+        setSidebarExpanded(false); 
+      } else {
+        setSidebarExpanded(true); 
+      }
     };
     window.addEventListener("resize", handleResize);
     return () => {
@@ -23,53 +29,41 @@ const AdminLayout = () => {
   }, []);
 
   return (
-    <>
-      <div className="flex flex-row w-[100vw] bg-white overflow-x-hidden">
-        {/* Sidebar */}
-        <div
-          className={`${
-            isSidebarExpanded
-              ? "ssm:w-[43%] smd:w-[30%] w-[58%]"
-              : "w-[8%] ssm:w-[6%] flex items-start justify-center"
-          } md:w-[25%] xxl:w-[19%] h-[100vh] z-30 transition-all overflow-hidden duration-300 ease-in-out fixed shadow-lg shadow-gray-300 bg-red-600`}
-        >
-          <div className="flex items-center justify-between p-4 md:hidden">
-            <button onClick={toggleSidebar} className="text-white smd:text-xl">
-              <GiHamburgerMenu />
-            </button>
-          </div>
-          {/* Only show the sidebar content when expanded or on md and larger screens */}
-          {(isSidebarExpanded || !isSmallScreen) && (
-            <AdminSideBar isSidebarExpanded={isSidebarExpanded} />
-          )}
+    <div className="flex flex-row w-full h-screen bg-white overflow-hidden">
+      {/* Sidebar */}
+      <div
+        className={`${
+          isSidebarExpanded
+            ? "w-[250px] md:w-[300px]"
+            : "w-[70px] md:w-[80px]"
+        } transition-all duration-300 ease-in-out fixed left-0 top-0 h-full bg-red-600 shadow-lg`}
+      >
+        <div className="flex items-center justify-between p-4 ">
+          <button 
+          onClick={toggleSidebar} 
+          className="text-white text-xl"
+         
+          >
+            <GiHamburgerMenu />
+          </button>
         </div>
+        <AdminSideBar isSidebarExpanded={isSidebarExpanded} />
+      </div>
 
-        {/* Main Content Area */}
-        <div
-          className={`w-full flex flex-col justify-start items-start overflow-y-auto overflow-x-hidden ${
-            isSidebarExpanded
-              ? " "
-              : "w-full md:w-[90%] xxl:ml-[19%] lg:ml-[25%] md:ml-[26%] ml-[5%]"
-          } transition-all h-auto duration-300 ease-in-out `}
-        >
-          <div
-            className={`w-full shadow-lg shadow-gray-300 transition-all h-auto duration-300 ease-in-out`}
-          >
-            <Navbar />
-          </div>
-          <div
-            className={` overflow-y-auto overflow-x-hidden w-full transition-all h-auto duration-300 ease-in-out`}
-          >
-            <div className="flex-grow w-full p-6">
-              {/* Forms/Content */}
-              <div className="w-full">
-                <Outlet />
-              </div>
-            </div>
+      {/* Main Content Area */}
+      <div
+        className={`flex flex-col flex-grow transition-all duration-300 ease-in-out ${
+          isSidebarExpanded ? "ml-[250px] md:ml-[300px]" : "ml-[70px] md:ml-[80px]"
+        }`}
+      >
+        <Navbar />
+        <div className="overflow-auto flex-grow">
+          <div className="p-6">
+            <Outlet />
           </div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

@@ -1,33 +1,59 @@
+
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { TbCalendarEvent } from "react-icons/tb";
-import { PiClipboardTextFill } from "react-icons/pi";
-import Dialog from "@mui/material/Dialog";
-import DialogActions from "@mui/material/DialogActions";
-import DialogContent from "@mui/material/DialogContent";
-import DialogContentText from "@mui/material/DialogContentText";
-import DialogTitle from "@mui/material/DialogTitle";
-import Button from "@mui/material/Button";
-import { createTheme, ThemeProvider } from "@mui/material/styles";
+import { Menu, Modal, Button } from "antd";
+import {
+  DashboardOutlined,
+  AppstoreOutlined,
+  SettingOutlined,
+  EditOutlined,
+  FileTextOutlined,
+  HomeOutlined,
+  MenuFoldOutlined,
+  MenuUnfoldOutlined,
+} from "@ant-design/icons";
 import { useAuth } from "../../context/authContext";
-
-// Custom theme to match your color scheme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#E55938",
-      dark: "#d14427",
-    },
-  },
-});
+import { collection, getDocs,orderBy } from "firebase/firestore"; 
+import { db } from "../../config/firebase";
 
 const AdminSideBar = ({ isSidebarExpanded }) => {
   const { handleLogout } = useAuth();
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [collapsed, setCollapsed] = useState(false);
+  const [logoUrl, setLogoUrl] = useState("");
   const location = useLocation();
+
+  const fetchLogo = async () => {
+    try {
+      const querySnapshot = await getDocs(
+        collection(db, "editHeader"),
+        orderBy("timestamp", "desc") 
+      );
+  
+      if (!querySnapshot.empty) {
+        // Get the most recent document
+        const logoData = querySnapshot.docs[0].data(); 
+        if (logoData?.url) {
+          setLogoUrl(logoData.url); 
+          console.log("logo uploaded")
+        } else {
+          console.warn("No 'url' field found in the most recent 'editHeader' document.");
+        }
+      } else {
+        console.warn("No documents found in editHeader.");
+      }
+    } catch (error) {
+      console.error("Error fetching logo:", error);
+    }
+  };
+  useEffect(() => {
+    fetchLogo();
+  }, []);
+
 
   // Function to determine active item based on current path
   const getActiveItemFromPath = (pathname) => {
+    console.log("Current Path:", pathname); // Log the current pathname to debug
     if (
       pathname.includes("/AdminLayout/activityManagement") ||
       (pathname.includes("/AdminLayout/editActivity") &&
@@ -39,21 +65,43 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
       (pathname.includes("/AdminLayout/editActivity") &&
         pathname.includes("/featureActivity"))
     ) {
+      console.log("Matched featured activity");
       return "Featured Activities";
-    } else {
+    }
+    else if (pathname.includes("/AdminLayout/editHeader")) {
+      console.log("Matched edit Header Section");
+      return "Edit Header"; 
+    }
+    else if (pathname.includes("/AdminLayout/editHome")) {
+      console.log("Matched edit Home Section");
+      return "Edit Home Page";
+      } else if (pathname.includes("/AdminLayout/editSignup")) {
+        console.log("Matched edit Signup Section");
+        return "Edit Signup Page";
+        } else if (pathname.includes("/AdminLayout/editLogin")) {
+          console.log("Matched edit Login Section");
+          return "Edit Login Page";
+          }else if (pathname.includes("/AdminLayout/editFooter")) {
+            console.log("Matched edit Footer Section");
+            return "Edit Footer Page";
+            }
+       else {
+        console.log("Matched activity management");
       return "Activity Management"; // Default tab
     }
   };
-
   // Set active item based on current path
   const [activeItem, setActiveItem] = useState(
     getActiveItemFromPath(location.pathname)
   );
+  console.log("Setting active item:", activeItem);
 
   // Update active item when location changes
   useEffect(() => {
     setActiveItem(getActiveItemFromPath(location.pathname));
   }, [location.pathname]);
+  console.log("Setting active item:", setActiveItem);
+
 
   const handleLogoutClick = () => {
     setShowLogoutDialog(true);
@@ -69,174 +117,171 @@ const AdminSideBar = ({ isSidebarExpanded }) => {
     setShowLogoutDialog(false);
   };
 
+  const toggleCollapsed = () => {
+    setCollapsed(!collapsed);
+  };
+
   return (
-    <ThemeProvider theme={theme}>
-      <div
-        className={`z-50 h-full w-full overflow-hidden bg-white ${
-          !isSidebarExpanded ? "hidden md:flex" : "flex"
-        }`}
+    <div
+      style={{
+        width: isSidebarExpanded ? 300 : 80,
+        height: "100vh",
+        background: "#ffffff",
+      }}
+      className="transition-all duration-300 ease-in-out"
+    >
+      
+      {/* Display the logo */}
+      <div style={{ padding: 16, textAlign: "center" }}>
+        {/* console.log("hello"); */}
+         {logoUrl ? (
+          <img
+            src={logoUrl } 
+            alt="Logo"
+            style={{ maxWidth: "100%", maxHeight: 80 }}
+          />
+        ) : (
+          <div style={{ padding: 16, fontWeight: "bold", fontSize: "18px" }}> 
+          <h1>{isSidebarExpanded ? "LOGO" : "Logo"}</h1>  </div>
+        )}
+      </div>
+      <Menu
+        mode="inline"
+        theme="light"
+        inlineCollapsed={!isSidebarExpanded}
+        selectedKeys={[activeItem]} // This will make sure the selected item has the active styles applied
+        style={{ height: "100%" }}
       >
-        <div className="flex flex-col items-center justify-start w-full h-full px-5 py-3 gap-y-4 smd:gap-y-10">
-          <div className="flex w-full">
-            <Link to={"/"}>
-              <h1 className="w-full p-2 smd:p-3 text-lg smd:text-2xl font-bold text-black bg-white rounded-lg">
-                Logo
-              </h1>
-            </Link>
-          </div>
-
-          <div className="flex flex-col w-full gap-y-4">
-            <Link
-              to={"/AdminLayout/activityManagement"}
-              className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group ${
-                activeItem === "Activity Management"
-                  ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
-                  : "hover:bg-[#E55938] rounded-md hover:text-white"
-              }`}
-            >
-              <TbCalendarEvent
-                size={35}
-                className={`text-black group-hover:text-white ${
-                  activeItem === "Activity Management"
-                    ? "text-white"
-                    : "text-black"
-                }`}
-              />
-              <p
-                className={`w-full p-2 smd:p-3 rounded-md text-[14px] smd:text-[17px] custom-semibold group-hover:text-white ${
-                  activeItem === "Activity Management"
-                    ? "text-white"
-                    : "text-black"
-                }`}
-              >
-                Activity Management
-              </p>
-            </Link>
-
-            <Link
-              to={"/AdminLayout/featuredActivity"}
-              className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group ${
-                activeItem === "Featured Activities"
-                  ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
-                  : "hover:bg-[#E55938] rounded-md hover:text-white"
-              }`}
-            >
-              <TbCalendarEvent
-                size={35}
-                className={`text-black group-hover:text-white ${
-                  activeItem === "Featured Activities"
-                    ? "text-white"
-                    : "text-black"
-                }`}
-              />
-              <p
-                className={`w-full p-2 smd:p-3 rounded-md text-[14px] smd:text-[17px] custom-semibold group-hover:text-white ${
-                  activeItem === "Featured Activities"
-                    ? "text-white"
-                    : "text-black"
-                }`}
-              >
-                Featured Activities
-              </p>
-            </Link>
-
-            <button
-              className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 hover:text-white group ${
-                activeItem === "Sign Out"
-                  ? "bg-[#E55938] rounded-md shadow-lg shadow-gray-300"
-                  : "hover:bg-[#E55938] rounded-md hover:text-white"
-              }`}
-              onClick={handleLogoutClick}
-            >
-              <PiClipboardTextFill
-                size={35}
-                className={`text-black group-hover:text-white ${
-                  activeItem === "Sign Out" ? "text-white" : "text-black"
-                }`}
-              />
-              <p
-                className={`w-full p-2 smd:p-3 text-start rounded-md text-[14px] smd:text-[17px] custom-semibold group-hover:text-white ${
-                  activeItem === "Sign Out" ? "text-white" : "text-black"
-                }`}
-              >
-                Logout
-              </p>
-            </button>
-          </div>
-        </div>
-
-        <Dialog
-          open={showLogoutDialog}
-          onClose={handleClose}
-          PaperProps={{
-            style: {
-              borderRadius: "12px",
-              padding: "8px",
-              maxWidth: "500px",
-            },
+        <Menu.Item
+          key="Activity Management"
+          icon={<DashboardOutlined />}
+          style={{
+            backgroundColor: activeItem === "Activity Management" ? "#E55938" : "transparent",
+            color: activeItem === "Activity Management" ? "white" : "black",
           }}
         >
-          <DialogTitle
-            sx={{
-              fontSize: "1.5rem",
-              fontWeight: "bold",
-              color: "#1a1a1a",
-              pt: 2,
-              pb: 1,
+          <Link to="/AdminLayout/activityManagement">Activity Management</Link>
+        </Menu.Item>
+        <Menu.Item
+          key="Featured Activities"
+          icon={<AppstoreOutlined />}
+          style={{
+            backgroundColor: activeItem === "Featured Activities" ? "#E55938" : "transparent",
+            color: activeItem === "Featured Activities" ? "white" : "black",
+          }}
+        >
+          <Link to="/AdminLayout/featuredActivity">Featured Activities</Link>
+        </Menu.Item>
+
+        <Menu.SubMenu key="contentManagement" icon={<SettingOutlined />} title="Content Management">
+
+        <Menu.Item
+            key="Edit Signup Page"
+            icon={<FileTextOutlined />}
+            style={{
+              backgroundColor: activeItem === "Edit Signup Page" ? "#E55938" : "transparent",
+              color: activeItem === "Edit Signup Page" ? "white" : "black",
             }}
           >
-            Confirm Logout
-          </DialogTitle>
-          <DialogContent>
-            <DialogContentText
-              sx={{
-                color: "#4a4a4a",
-                fontSize: "1rem",
-                mb: 1,
-              }}
-            >
-              Are you sure you want to logout? You'll need to login again to
-              access your account.
-            </DialogContentText>
-          </DialogContent>
-          <DialogActions sx={{ p: 2, gap: 1 }}>
-            <Button
-              onClick={handleClose}
-              sx={{
-                textTransform: "none",
-                color: "#4a4a4a",
-                backgroundColor: "#f5f5f5",
-                "&:hover": {
-                  backgroundColor: "#e0e0e0",
-                },
-                px: 3,
-                py: 1,
-                borderRadius: "8px",
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={handleLogoutConfirm}
-              variant="contained"
-              sx={{
-                textTransform: "none",
-                backgroundColor: "#E55938",
-                "&:hover": {
-                  backgroundColor: "#d14427",
-                },
-                px: 3,
-                py: 1,
-                borderRadius: "8px",
-              }}
-            >
-              Logout
-            </Button>
-          </DialogActions>
-        </Dialog>
+            <Link to="/AdminLayout/editSignup">Edit SignUp Page</Link>
+          </Menu.Item>
+
+       < Menu.Item
+            key="Edit Login Page"
+            icon={<FileTextOutlined />}
+            style={{
+              backgroundColor: activeItem === "Edit Login Page" ? "#E55938" : "transparent",
+              color: activeItem === "Edit Login Page" ? "white" : "black",
+            }}
+          >
+            <Link to="/AdminLayout/editLogin">Edit Login Page</Link>
+          </Menu.Item>
+
+          <Menu.Item
+            key="Edit Header"
+            icon={<EditOutlined />}
+            style={{
+              backgroundColor: activeItem === "Edit Header" ? "#E55938" : "transparent",
+              color: activeItem === "Edit Header" ? "white" : "black",
+            }}
+          >
+            <Link to="/AdminLayout/editHeader">Edit Header</Link>
+          </Menu.Item>
+          <Menu.Item
+            key="edit Home Page"
+            icon={<HomeOutlined />}
+            style={{
+              backgroundColor: activeItem === "Edit Home Page" ? "#E55938" : "transparent",
+              color: activeItem === "Edit Home Page" ? "white" : "black",
+            }}
+          >
+            <Link to="/AdminLayout/editHome">Edit Home Page</Link>
+            </Menu.Item>
+
+
+          <Menu.Item
+            key="Edit Footer Page"
+            icon={<EditOutlined />}
+            style={{
+              backgroundColor: activeItem === "Edit Footer Page" ? "#E55938" : "transparent",
+              color: activeItem === "Edit Footer Page" ? "white" : "black",
+            }}
+          >
+            <Link to="/AdminLayout/editFooter">Edit Footer Page</Link>
+          </Menu.Item>
+
+        </Menu.SubMenu>
+
+        <Menu.Item
+          key="Sign Out"
+          icon={<FileTextOutlined />}
+          onClick={handleLogoutClick}
+          style={{
+            backgroundColor: activeItem === "Sign Out" ? "#E55938" : "transparent",
+            color: activeItem === "Sign Out" ? "white" : "black",
+          }}
+        >
+          Logout
+        </Menu.Item>
+      </Menu>
+
+      <div
+        style={{
+          position: "absolute",
+          bottom: 16,
+          left: 16,
+          cursor: "pointer",
+        }}
+        onClick={toggleCollapsed}
+      >
+        {/* {isSidebarExpanded ? <MenuUnfoldOutlined /> : <MenuFoldOutlined />} */}
       </div>
-    </ThemeProvider>
+
+      <Modal
+        title="Confirm Logout"
+        visible={showLogoutDialog}
+        onCancel={handleClose}
+        footer={[
+          <Button key="cancel" onClick={handleClose} style={{ textTransform: "none" }}>
+            Cancel
+          </Button>,
+          <Button
+            key="logout"
+            type="primary"
+            onClick={handleLogoutConfirm}
+            style={{ textTransform: "none", backgroundColor: "#E55938", borderColor: "#E55938" }}
+            
+          >
+            Logout
+          </Button>,
+        ]}
+      >
+        <p>Are you sure you want to logout? You'll need to login again to access your account.</p>
+      </Modal>
+    </div>
   );
 };
-
 export default AdminSideBar;
+
+
+

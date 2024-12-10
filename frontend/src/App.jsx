@@ -24,6 +24,11 @@ import CreateActivity from "./admin/components/AddActivity";
 import EditActivityComponent from "./admin/components/EditActivity";
 import FeaturedActivities from "./admin/pages/FeaturedActivities";
 import MyInterests from "./admin/pages/MyInterests";
+import EditHeader from "./admin/pages/EditHeader";
+import EditHome from "./admin/pages/EditHome";
+import EditSignUp from "./admin/pages/EditSignUp";
+import EditLogin from "./admin/pages/EditLogin";
+import EditFooter from "./admin/pages/EditFooter";
 
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center h-screen loading-spinner">
@@ -71,7 +76,7 @@ function App() {
               <Route path="/resetPassword" element={<ResetPasswordFrom />} />
               <Route path="/" element={<Layout />}>
                 <Route index element={<Homepage />} />
-                <Route path="/blog" element={<Blogs />} />
+                {/* <Route path="/blog" element={<Blogs />} /> */}
                 <Route
                   path="/allActivities/:name"
                   element={<TeamSportsCategory />}
@@ -157,6 +162,61 @@ function App() {
                     )
                   }
                 />
+
+                 <Route
+                  path="editHeader"
+                  element={
+                    currentUser ? (
+                      <EditHeader />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />  
+
+                <Route
+                  path="editHome"
+                  element={
+                    currentUser ? (
+                      <EditHome />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />  
+
+                <Route
+                  path="editSignUp"
+                  element={
+                    currentUser ? (
+                      <EditSignUp />
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+                  <Route
+                  path="editLogin"
+                  element={
+                    currentUser ? (
+                    <EditLogin/>
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+
+              <Route
+                  path="editFooter"
+                  element={
+                    currentUser ? (
+                    <EditFooter/>
+                    ) : (
+                      <Navigate to="/login" />
+                    )
+                  }
+                />
+
                 \{" "}
                 <Route
                   path="editActivity/:activityIdParam/:featureActivityParam"

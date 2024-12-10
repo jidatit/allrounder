@@ -1,10 +1,11 @@
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { useState } from "react";
+import { useState ,useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { auth, db } from "../config/firebase";
-import { addDoc, collection } from "firebase/firestore";
+import { addDoc,doc,getDoc, collection } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import { message } from "antd";
 
 const SignupPage = () => {
   const [email, setEmail] = useState("");
@@ -14,10 +15,35 @@ const SignupPage = () => {
   const [zipCode, setZipCode] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const navigate = useNavigate();
+  const [SignUpData, setSignUpData] = useState({
+    imageUrl: '',
+    heading: '',
+  });
+
   const handleSubmit = (e) => {
     e.preventDefault();
     console.log("Form submitted with:", { email, password, zipCode });
   };
+
+
+  //signUp page function
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const docRef = doc(db, 'SignUp', 'section');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setSignUpData(docSnap.data());
+        } else {
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        message.error('Failed to fetch data.');
+      }
+    };
+    fetchData();
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -66,15 +92,21 @@ const SignupPage = () => {
   return (
     <main className="flex max-w-[1440px] mx-auto">
       <div className="w-1/2 lg:h-full overflow-hidden hidden md:flex">
+      {SignUpData.imageUrl ? (
         <img
-          src="/signup.jpeg"
-          alt=""
-          className="object-cover object-center h-[85vh] mt-5 w-full"
+          // src="/signup.jpeg"
+          src={SignUpData.imageUrl}
+          alt="SignUp"
+          // className="object-cover object-center h-[85vh] mt-5 w-full"
         />
+      ):(
+        <p>No image available</p>
+        )}
       </div>
       <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex-col">
         <h1 className="orelega-one-regular lg:text-5xl md:text-4xl  text-3xl  ">
-          Signup Your Account
+          {/* Signup Your Account */}
+          {SignUpData.heading}
         </h1>
         <div className="w-full mt-8">
           <form

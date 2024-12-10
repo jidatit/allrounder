@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState,useEffect } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 import { auth, db } from "../config/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDoc, query, where ,doc} from "firebase/firestore";
 import { toast } from "react-toastify";
+import { message } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 
 const LoginPage = () => {
@@ -12,9 +13,34 @@ const LoginPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
+  const [loginData, setLoginData] = useState({
+    imageUrl: '',
+    heading: '',
+  });
   const handleSubmit = (e) => {
     e.preventDefault();
   };
+  //Login Page Function  
+  useEffect(() => {
+    console.log('sabaa');
+    const fetchData = async () => {
+      try {
+        
+        const docRef = doc(db, 'Login', 'section');
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+          setLoginData(docSnap.data());
+        } else {
+          console.log('No such document!');
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        message.error('Failed to fetch data.');
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -71,15 +97,21 @@ const LoginPage = () => {
   return (
     <main className="flex max-w-[1440px] mx-auto">
       <div className="w-1/2 lg:h-full overflow-hidden hidden md:flex">
+      {loginData.imageUrl ? (
         <img
-          src="/login.jpeg"
-          alt=""
-          className="object-cover object-center h-[85vh] w-full mt-5"
+          // src="/login.jpeg"
+          src={loginData.imageUrl}
+          alt="Login"
+          
         />
+      ):(
+        <p>No image available</p>
+        )}
       </div>
       <div className="flex items-center justify-center w-full md:w-1/2 lg:h-[800px] flex-col">
         <h1 className="orelega-one-regular lg:text-5xl md:text-4xl  text-3xl  ">
-          Login to your account
+          {/* Login to your account */}
+          {loginData.heading}
         </h1>
         <div className="w-full mt-8">
           <form

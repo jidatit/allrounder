@@ -102,3 +102,8 @@
   text-align: center;
   line-height: 30px;
 }
+
+
+.ant-menu-submenu-title {
+  color: #DC2626 !important;
+}

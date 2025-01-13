@@ -454,19 +454,20 @@ const Homepage = () => {
                   {Text}
                 </h1>
 
-                <div className="w-[65%] text-[10px] sm:text-xs md:text-sm lg:h-16 md:h-14 h-10 rounded-lg overflow-hidden mt-8">
+                <div className="w-[65%] text-[10px] sm:text-xs md:text-sm lg:h-16 md:h-14 h-10 rounded-lg overflow-hidden mt-8 ">
                   <form
-                    className="flex items-center h-full relative"
+                    className="flex items-center h-full relative "
                     onSubmit={handleSearch}
                   >
                     <IoIosSearch className="absolute left-4 text-xl md:text-2xl" />
+
                     <input
                       type="text"
                       name="keywords"
                       id="keywords"
                       value={activityName}
                       onChange={(e) => setSearchActivityName(e.target.value)}
-                      className="h-full lg:w-[85%] w-[75%] placeholder:text-black placeholder:custom-light placeholder:text-sm px-4 pl-10 md:pl-14 rounded-none"
+                      className="h-full lg:w-[85%] w-[75%] placeholder:text-black placeholder:custom-light placeholder:text-sm px-4 pl-10 md:pl-14 rounded-none text-[16px]"
                       placeholder="Search activities"
                     />
                     <button
@@ -489,7 +490,7 @@ const Homepage = () => {
               {/* <p className="custom-regular md:text-lg lg:text-xl">
             Lorem ipsum dolor sit amet, consectetuer adipiscing elit.
           </p> */}
-              <div className="flex gap-4 flex-wrap w-full  content-start  justify-between">
+              <div className="flex gap-2 md:gap-4 flex-wrap w-full  content-start  justify-between ">
                 {categories.map((category, index) => {
                   return (
                     <CategoryCard

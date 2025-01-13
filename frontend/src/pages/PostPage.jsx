@@ -51,6 +51,7 @@ const createCustomIcon = (number) => {
 
 const PostPage = () => {
   const { currentUser } = useAuth();
+  console.log("current user", currentUser);
 
   const { activityIdParam } = useParams();
   const [relatedActivities, setRelatedActivities] = useState([]);
@@ -715,16 +716,17 @@ const PostPage = () => {
               <ImageSlider images={formData.imagesPreviews} />
               {/* tags */}
               <div className="w-full flex flex-wrap gap-2  pt-9">
-                {formData.hashtags.map((tag, index) => {
-                  return (
-                    <p
-                      key={index}
-                      className="bg-[#E559381A] border-2 border-[#E55938] px-2 py-0.5 text-xl rounded-xl"
-                    >
-                      #{tag}
-                    </p>
-                  );
-                })}
+                {currentUser?.userType === "admin" &&
+                  formData.hashtags.map((tag, index) => {
+                    return (
+                      <p
+                        key={index}
+                        className="bg-[#E559381A] border-2 border-[#E55938] px-2 py-0.5 text-xl rounded-xl"
+                      >
+                        #{tag}
+                      </p>
+                    );
+                  })}
               </div>
               <p className="md:text-xl  text-lg lg:text-2xl custom-semibold my-4">
                 DESCRIPTION

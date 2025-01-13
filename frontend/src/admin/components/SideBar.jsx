@@ -70,7 +70,7 @@ const SideBar = ({ isSidebarExpanded }) => {
           </h1>
         </div>
 
-        <div className="flex flex-col w-full gap-y-4">
+        <div className="flex flex-col w-full gap-y-4 ">
           <Link
             to="/UserLayout"
             className={`w-full flex justify-center items-center transition-all duration-300 ease-in-out rounded-md px-2 py-1 group ${
@@ -219,11 +219,3 @@ const SideBar = ({ isSidebarExpanded }) => {
 };
 
 export default SideBar;
-
-
-
-
-
-
-
-

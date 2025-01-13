@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Camera, Plus, Search, X } from "lucide-react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../../config/firebase";
@@ -43,16 +43,62 @@ const CreateActivity = () => {
     endingHours: "",
   });
 
-  const categories = [
-    "Team Sports",
-    "Dance",
-    "Martial Arts",
-    "Stem",
-    "Athletics",
-    "Music",
-    "Arts",
-    "Social",
-  ];
+  // const categories = [
+  //   "Team Sports",
+  //   "Dance",
+  //   "Martial Arts",
+  //   "Stem",
+  //   "Athletics",
+  //   "Music",
+  //   "Arts",
+  //   "Social",
+  // ];
+
+  const [categories, setCategories] = useState([]);
+
+  // useEffect(() => {
+  //   const fetchCategories = async () => {
+  //     try {
+  //       const categoryCollectionRef = collection(db, "CategoryMenu");
+  //       const categorySnapshot = await getDocs(categoryCollectionRef);
+  //       const categoryList = categorySnapshot.docs.map((doc) => doc.data());
+  //       // const categoryNames = categoryList[1].map((item) => item.name);
+  //       // setCategories(categoryList);
+  //       console.log("category list", categoryList);
+  //     } catch (error) {
+  //       console.error("Error fetching categories:", error);
+  //       toast.error("Failed to load categories");
+  //     }
+  //   };
+
+  //   fetchCategories();
+  // }, []);
+
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoryCollectionRef = collection(db, "CategoryMenu");
+        const categorySnapshot = await getDocs(categoryCollectionRef);
+        const categoryList = categorySnapshot.docs.map((doc) => doc.data());
+
+        // Access the "items" array in categoryList[1]
+        if (categoryList[1] && Array.isArray(categoryList[1].items)) {
+          const categoryNames = categoryList[1].items.map((item) => item.name);
+          setCategories(categoryNames);
+          console.log("Category names:", categoryNames);
+          // setCategories(categoryList);
+        } else {
+          console.error("Items array not found in categoryList[1]");
+        }
+      } catch (error) {
+        console.error("Error fetching categories:", error);
+        toast.error("Failed to load categories");
+      }
+    };
+
+    fetchCategories();
+  }, []);
+
   const [loading, setLoading] = useState(false);
   const handleImageUpload = (e) => {
     const files = Array.from(e.target.files);
@@ -132,6 +178,7 @@ const CreateActivity = () => {
   //     hashtags: newHashtags,
   //   });
   // };
+
   // Function to handle hashtag input changes
   const handleHashtagChange = (index, value) => {
     // Remove extra '#' characters, allowing only one at the start

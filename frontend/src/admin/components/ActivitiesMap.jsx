@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { MapContainer, Marker, Popup, TileLayer } from "react-leaflet";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import SetBoundsComponent from "./SetBoundsComponent";
@@ -12,7 +12,7 @@ const ActivitiesMap = ({ activities, featureActivityParam }) => {
   const [mapBounds, setMapBounds] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [mapCenter, setMapCenter] = useState([33.684422, 73.047882]);
-  const [mapZoom, setMapZoom] = useState(13);
+  const [mapZoom, setMapZoom] = useState(10);
 
   // Geocode locations and set map parameters
   useEffect(() => {
@@ -126,15 +126,58 @@ const ActivitiesMap = ({ activities, featureActivityParam }) => {
   // }
 
   return (
-    <div className="h-full w-full relative">
+    <div className="h-full w-full relative  ">
       {isLoading ? (
+        // <>
+        //   <div className="flex flex-col gap-y-3 items-center justify-center h-screen loading-spinner ">
+        //     <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-gray-900/50 animate-spin"></div>
+        //     <h1 className="font-radios text-xl text-orange-600">
+        //       Loading the Map....
+        //     </h1>
+        //   </div>
+        // </>
         <>
-          <div className="flex flex-col gap-y-3 items-center justify-center h-screen loading-spinner">
-            {/* Spinner */}
+          <MapContainer
+            ref={mapRef}
+            center={mapCenter}
+            zoom={mapZoom}
+            className="h-full w-full"
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+
+            {locations.map((location, index) => (
+              <Marker
+                key={location.id}
+                position={[location.lat, location.lng]}
+                icon={createMarkerIcon(index)}
+                eventHandlers={{
+                  click: () => handleActivityClick(location),
+                }}
+              >
+                <Popup>
+                  <div className="text-sm">
+                    <h3 className="font-bold">{location.title}</h3>
+                    <p>{location.location}</p>
+                    <button
+                      className="mt-2 text-blue-600 hover:text-blue-800"
+                      onClick={() => handleActivityClick(location)}
+                    >
+                      View Details
+                    </button>
+                  </div>
+                </Popup>
+              </Marker>
+            ))}
+
+            {mapBounds && <SetBoundsComponent bounds={mapBounds} />}
+          </MapContainer>
+
+          <div className="flex flex-col gap-y-3 items-center justify-center h-full w-full loading-spinner absolute bg-[#00000036] top-0 zzindex">
             <div className="w-16 h-16 border-4 rounded-full border-t-transparent border-gray-900/50 animate-spin"></div>
-            <h1 className="font-radios text-xl text-orange-600">
-              Loading the Map....
-            </h1>
+            <h1 className="font-radios text-xl text-orange-600">Loading...</h1>
           </div>
         </>
       ) : (

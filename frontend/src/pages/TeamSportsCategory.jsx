@@ -300,9 +300,7 @@ const TeamSportsCategory = () => {
       <section className="h-full w-full px-4 sm:px-8 pt-10 xxl:px-16 mx-auto flex flex-col gap-2 md:gap-3 lg:gap-5 ">
         <div className="w-full">
           <h2 className="custom-bold text-2xl md:text-4xl lg:text-5xl">
-            {name
-              ? `${name} Activities`
-              : `All Activities including ${activityName}`}
+            {name ? `${name} Activities` : `All Activities `}
           </h2>
 
           <div className="flex gap-3 custom-medium mt-3 lg:mt-8">
@@ -357,7 +355,7 @@ const TeamSportsCategory = () => {
                 )}
               </div>
             )}
-            <div className="lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
+            <div className=" lg:w-[40%] md:h-[600px] h-[500px] lg:h-[800px] xxl:p-4">
               <ActivitiesMap
                 activities={
                   activityName ? searchedActivities : filteredActivities

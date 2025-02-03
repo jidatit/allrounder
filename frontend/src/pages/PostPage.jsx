@@ -139,6 +139,7 @@ const PostPage = () => {
     description: "",
     details: [""],
     location: "",
+    locationName: "",
     hashtags: [""],
     category: "",
     showGoogleMap: false,
@@ -207,6 +208,7 @@ const PostPage = () => {
               profilePic: null,
               profilePicPreview: activityData.host?.profilePicUrl || null,
             },
+            locationName: activityData.locationName || "",
             startingHours: activityData.startingHours || "",
             endingHours: activityData.endingHours || "",
             documentId: activityDoc.id, // Store the document ID for updates
@@ -470,7 +472,7 @@ const PostPage = () => {
 
   const getCenterCoordinates = (locations) => {
     if (!locations || locations.length === 0) {
-      return [33.684422, 73.047882]; // Default center if no locations
+      return [33.684422, 73.047882];
     }
 
     const validLocations = locations.filter((loc) => loc.lat && loc.lng);
@@ -588,7 +590,7 @@ const PostPage = () => {
 
   const averageRating = calculateAverageRating(singleActivity.reviews); // Decimal rating (e.g., 3.5)
   return (
-    <main className="h-full w-full ">
+    <main className="h-full w-full  ">
       <section className="h-full w-full px-4 sm:px-8  pt-5  md:pt-8 lg:pt-10 lg:px-16 mx-auto max-w-[1440px] flex flex-col gap-2 md:gap-3 lg:gap-5 ">
         {/* head */}
         <header className="flex flex-col md:flex-row ">
@@ -828,7 +830,11 @@ const PostPage = () => {
             <div className="pb-7 pt-2 px-9 w-full">
               <div className="flex flex-col gap-2">
                 <h5 className="custom-medium text-lg">Location:</h5>
-                <p className="text-sm custom-light">{formData.location}</p>
+                <p className="text-sm custom-light">
+                  {formData?.locationName
+                    ? formData?.locationName
+                    : formData.location}
+                </p>
               </div>
               <MapModal
                 location={formData.location}

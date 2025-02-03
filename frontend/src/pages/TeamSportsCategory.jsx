@@ -341,7 +341,11 @@ const TeamSportsCategory = () => {
                       activityIdParam={activity.activityId}
                       docId={activity.docId}
                       name={activity.title}
-                      address={activity.location}
+                      address={
+                        activity?.locationName
+                          ? activity?.locationName
+                          : activity?.location
+                      }
                       contact={activity.host?.phone || "N/A"}
                       url={
                         activity.imageUrls?.[0] ||

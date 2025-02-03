@@ -16,6 +16,7 @@ import {
 } from "firebase/firestore";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
+import LocationSelector from "./LocationSelector";
 
 const CreateActivity = () => {
   const navigate = useNavigate();
@@ -26,6 +27,7 @@ const CreateActivity = () => {
     description: "",
     details: [""],
     location: "",
+    locationName: "",
     hashtags: [""],
     category: "",
     showGoogleMap: false,
@@ -260,6 +262,7 @@ const CreateActivity = () => {
         description: formData.description,
         details: formData.details.filter((detail) => detail.trim() !== ""),
         location: formData.location,
+        locationName: formData.locationName,
         category: formData.category,
         hashtags: formData.hashtags.filter((tag) => tag.trim() !== ""),
         showGoogleMap: formData.showGoogleMap,
@@ -347,6 +350,33 @@ const CreateActivity = () => {
       addImages(files); // Call the function to add images
     }
   };
+
+  const handleLocationSelect = async (location) => {
+    const { lat, lng } = location;
+
+    try {
+      // Fetch location name using OpenStreetMap Nominatim API
+      const response = await fetch(
+        `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json`
+      );
+      const data = await response.json();
+
+      // Extract address
+      const locationName = data.display_name || "Unknown Location";
+
+      // Update state
+      setFormData({
+        ...formData,
+        location: `${lat}, ${lng}`,
+        locationName, // Store name separately
+      });
+      console.log("Selected Location:", { lat, lng, locationName });
+      console.log("formData:", { formData });
+    } catch (error) {
+      console.error("Error fetching location name:", error);
+    }
+  };
+
   return (
     <div className="w-full mx-auto p-6">
       <div className="bg-white rounded-lg shadow-sm p-6">
@@ -474,18 +504,22 @@ const CreateActivity = () => {
 
             {/* Location */}
             <div className="mb-6">
-              <label className="block text-sm font-medium mb-2">Location</label>
+              <label className="block text-sm font-medium mb-2">
+                Location {"(search and select location from map)"})
+              </label>
               <div className="flex gap-2">
                 <input
                   type="text"
-                  value={formData.location}
+                  value={formData.locationName}
+                  disabled
                   onChange={(e) =>
                     setFormData({ ...formData, location: e.target.value })
                   }
-                  className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                  className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none mb-6"
                   placeholder="Enter location"
                 />
               </div>
+              <LocationSelector onLocationSelect={handleLocationSelect} />
             </div>
           </div>
 
